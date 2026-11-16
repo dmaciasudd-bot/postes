@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vigía · Carta de simulación</title>
+<style>
+/* Concepto: una carta topográfica de operaciones. La hoja (mapa) al centro, la consola de la Central
+   como margen de tinta a la izquierda y el teléfono del vecino a la derecha. Esquinas rectas, sin tarjetas. */
+@font-face { font-family: "JBM"; src: url("fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2"); font-weight: 100 800; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("fonts/inter-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+:root {
+  --papel: #eef1ea; --papel2: #e2e6dc; --tinta: #15171a; --tinta2: #5a6068; --regla: #b9c0b4;
+  --verde: #1e9e57; --amarillo: #f4b400; --rojo: #e0281c; --morado: #6a3fd0; --azul: #1b4fd6; --fuego: #f26a1b;
+  --rotulo: "Bahnschrift", "DIN Alternate", "Roboto Condensed", "Arial Narrow", sans-serif;
+  --dato: "JBM", ui-monospace, Consolas, monospace;
+  --app: "Inter", system-ui, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; margin: 0; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body { background: var(--papel2); color: var(--tinta); font: 15px/1.35 var(--rotulo); display: grid; grid-template-columns: 280px minmax(0, 1fr) 326px; overflow: hidden; }
+button { font: inherit; color: inherit; cursor: pointer; border-radius: 0; }
+button:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
+.cond { font-stretch: 78%; letter-spacing: .09em; text-transform: uppercase; }
+
+/* ---------- Consola de la Central (margen de tinta) ---------- */
+.consola { background: var(--tinta); color: var(--papel); display: flex; flex-direction: column; min-height: 0; padding: 18px 18px 14px; gap: 14px; }
+.cart b { display: block; font-size: 46px; font-weight: 700; line-height: .9; letter-spacing: -.01em; font-stretch: 80%; }
+.cart span { display: block; margin-top: 7px; font-size: 12px; color: #a9b0a6; font-stretch: 78%; letter-spacing: .1em; text-transform: uppercase; }
+.cart em { display: block; font-style: normal; margin-top: 8px; font-size: 13.5px; line-height: 1.3; color: #d6dbd2; border-top: 1px solid #3a3f45; padding-top: 8px; }
+
+.mandos { display: grid; gap: 6px; }
+.mandos button { background: none; border: 1.5px solid #6b7178; color: var(--papel); min-height: 38px; padding: 0 12px; font-weight: 600; font-size: 14px; font-stretch: 85%; letter-spacing: .05em; text-transform: uppercase; }
+.mandos button:hover { border-color: var(--papel); }
+.mandos .ppal { background: var(--rojo); border-color: var(--rojo); min-height: 46px; font-size: 16px; }
+.mandos .fila { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.seg { display: flex; }
+.seg button { border-left-width: 0; padding: 0 10px; font-family: var(--dato); letter-spacing: 0; }
+.seg button:first-child { border-left-width: 1.5px; }
+.seg button.on { background: var(--papel); color: var(--tinta); border-color: var(--papel); }
+
+.mastil { list-style: none; padding: 0; display: grid; gap: 3px; }
+.mastil li { display: grid; grid-template-columns: 34px 1fr; align-items: center; border: 1.5px solid #3a3f45; color: #7d848b; min-height: 40px; transition: background .3s, color .3s; }
+.mastil li b { font: 700 19px var(--dato); text-align: center; border-right: 1.5px solid #3a3f45; align-self: stretch; display: flex; align-items: center; justify-content: center; }
+.mastil li span { padding: 4px 10px; font-size: 16px; font-weight: 700; font-stretch: 82%; letter-spacing: .07em; line-height: 1.1; }
+.mastil li small { display: none; font-size: 11.5px; font-weight: 400; letter-spacing: .02em; font-stretch: 90%; margin-top: 2px; }
+.mastil li.on { color: #fff; border-color: transparent; }
+.mastil li.on b { border-color: rgba(0,0,0,.25); }
+.mastil li.on small { display: block; }
+.mastil li.on[data-n="0"] { background: var(--verde); }
+.mastil li.on[data-n="1"] { background: var(--amarillo); color: var(--tinta); }
+.mastil li.on[data-n="2"] { background: var(--rojo); }
+.mastil li.on[data-n="3"] { background: var(--morado); }
+
+.reloj { display: flex; align-items: baseline; justify-content: space-between; border-top: 1px solid #3a3f45; border-bottom: 1px solid #3a3f45; padding: 6px 0; }
+.reloj span { font-size: 11.5px; color: #a9b0a6; }
+.reloj b { font: 700 34px/1 var(--dato); letter-spacing: -.02em; }
+.cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.cifras div { display: flex; flex-direction: column; }
+.cifras dd { font: 700 30px/1 var(--dato); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.cifras dt { font-size: 11.5px; color: #a9b0a6; margin-top: 3px; font-stretch: 80%; letter-spacing: .08em; text-transform: uppercase; }
+.cifras .sube dd { animation: sube .7s; }
+@keyframes sube { 0% { color: #7fa6ff; transform: translateX(6px); } 100% { transform: none; } }
+
+.bitacora { flex: 1; min-height: 60px; display: flex; flex-direction: column; border-top: 1px solid #3a3f45; padding-top: 8px; }
+.bitacora h2 { font-size: 11.5px; font-weight: 600; color: #a9b0a6; margin-bottom: 6px; }
+.bitacora ul { list-style: none; padding: 0; overflow: auto; flex: 1; display: grid; gap: 5px; align-content: start; scrollbar-width: thin; scrollbar-color: #4a5058 transparent; }
+.bitacora li { display: grid; grid-template-columns: 44px 1fr; gap: 8px; font-size: 13px; line-height: 1.25; border-left: 3px solid var(--c, #555); padding-left: 7px; }
+.bitacora time { font: 12px var(--dato); color: #a9b0a6; padding-top: 1px; }
+
+/* ---------- La hoja ---------- */
+.hoja { display: flex; flex-direction: column; align-items: center; min-width: 0; min-height: 0; padding: 14px 16px 12px; gap: 0; }
+.marco { width: min(100%, calc((100vh - 214px) * 1.5625)); }
+.mapa { position: relative; width: 100%; aspect-ratio: 1000 / 640; background: var(--papel); border: 2px solid var(--tinta); cursor: crosshair; overflow: hidden; }
+.mapa > canvas, .mapa > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#fuego { filter: blur(3.5px); pointer-events: none; mix-blend-mode: multiply; }
+#fondo { pointer-events: none; }
+.sello { position: absolute; right: 2.2%; bottom: 5%; transform: rotate(-5deg); border: 3px solid var(--rojo); color: var(--rojo); padding: 5px 12px 4px; text-align: center; font-weight: 700; font-size: clamp(15px, 2vw, 26px); font-stretch: 78%; letter-spacing: .14em; line-height: 1; mix-blend-mode: multiply; opacity: .82; pointer-events: none; }
+.sello small { display: block; font-size: .42em; letter-spacing: .1em; margin-top: 4px; font-weight: 600; }
+.pista { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: var(--tinta); color: var(--papel); padding: 9px 16px; font-size: 14.5px; font-weight: 600; white-space: nowrap; pointer-events: none; }
+
+.pie { display: grid; grid-template-columns: auto 1fr; background: var(--tinta); color: var(--papel); border: 2px solid var(--tinta); border-top: 0; }
+.pie .nivel { width: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; font: 700 30px/1 var(--dato); transition: background .3s; }
+.pie .nivel small { font: 600 9.5px var(--rotulo); letter-spacing: .1em; margin-top: 3px; }
+.pie .nivel[data-n="0"] { background: var(--verde); } .pie .nivel[data-n="1"] { background: var(--amarillo); color: var(--tinta); } .pie .nivel[data-n="2"] { background: var(--rojo); }
+.pie .texto { padding: 9px 16px 10px; min-height: 68px; }
+.pie .texto p:first-child { font-size: clamp(17px, 1.55vw, 23px); font-weight: 700; line-height: 1.15; }
+.pie .texto p + p { font-size: 14px; color: #c5cbc1; margin-top: 3px; line-height: 1.3; }
+
+.margen { width: 100%; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: 0 22px; padding-top: 10px; }
+.margen h2 { font-size: 11.5px; font-weight: 700; border-bottom: 1.5px solid var(--tinta); padding-bottom: 3px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+.margen h2 i { font-style: normal; color: var(--rojo); }
+.secuencia { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 3px 0; font: 700 13.5px var(--dato); }
+.secuencia li + li::before { content: "→"; margin: 0 7px; color: var(--rojo); }
+.secuencia li small { font-weight: 400; color: var(--tinta2); }
+.lectura { font-size: 14.5px; line-height: 1.35; margin-top: 5px; }
+.lectura b { font-weight: 700; }
+.lectura span { color: var(--tinta2); }
+.signos { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; font-size: 13px; }
+.signos span { display: flex; align-items: center; gap: 7px; }
+.signos i { width: 13px; height: 13px; border-radius: 50%; flex: none; border: 1.8px solid var(--tinta); }
+.signos i.s-ruta { border: 0; border-radius: 0; height: 5px; width: 20px; background: var(--azul); }
+.signos i.s-corte { border: 0; border-radius: 0; height: 0; width: 20px; border-top: 3px dashed var(--rojo); }
+.nota { font-size: 12px; color: var(--tinta2); margin-top: 6px; line-height: 1.3; }
+
+/* Rótulos del mapa */
+.t-cod { font: 700 11.5px var(--dato); fill: #15171a; paint-order: stroke; stroke: #eef1ea; stroke-width: 3.5px; stroke-linejoin: round; }
+.t-est { font: 700 9.5px var(--rotulo); letter-spacing: .9px; fill: #15171a; paint-order: stroke; stroke: #eef1ea; stroke-width: 3px; stroke-linejoin: round; }
+.t-zona { font: italic 400 15px Georgia, "Times New Roman", serif; letter-spacing: 7px; fill: #4f7545; }
+.t-seg { font: 700 12px var(--rotulo); letter-spacing: 1.2px; fill: #15171a; paint-order: stroke; stroke: #eef1ea; stroke-width: 4px; stroke-linejoin: round; }
+.t-grilla { font: 500 9px var(--dato); fill: #7f93a8; }
+.poste { cursor: pointer; }
+.flujo { stroke-dasharray: 4 10; animation: correr .7s linear infinite; }
+.ruta-mov { stroke-dasharray: 9 11; animation: correr2 .8s linear infinite; }
+@keyframes correr { to { stroke-dashoffset: -14; } }
+@keyframes correr2 { to { stroke-dashoffset: -20; } }
+.pulso { transform-box: fill-box; transform-origin: center; animation: pulso 1.5s ease-out infinite; }
+@keyframes pulso { 0% { transform: scale(1); opacity: .6; } 100% { transform: scale(2.5); opacity: 0; } }
+.recien { animation: recien 1.2s ease-out; transform-box: fill-box; transform-origin: center; }
+@keyframes recien { 0% { transform: scale(2); } 100% { transform: none; } }
+
+/* ---------- Teléfono del vecino ---------- */
+.vecino { display: flex; flex-direction: column; min-height: 0; padding: 14px 18px 12px 4px; gap: 8px; }
+.vecino > p { font-size: 11.5px; font-weight: 700; display: flex; justify-content: space-between; border-bottom: 1.5px solid var(--tinta); padding-bottom: 3px; }
+.vecino > p i { font-style: normal; color: var(--rojo); }
+.tel { flex: 1; min-height: 0; background: #0b0d10; border: 9px solid #1d2126; border-radius: 38px; box-shadow: 0 0 0 1.5px #000, 0 14px 30px rgba(21,23,26,.28); overflow: hidden; display: flex; flex-direction: column; position: relative; color: #f2f4f7; font-family: var(--app); }
+.tel::before { content: ""; position: absolute; top: 6px; left: 50%; width: 74px; height: 16px; margin-left: -37px; background: #1d2126; border-radius: 10px; z-index: 4; }
+.tel-banda { background: #ff3dd4; color: #1a0016; font-size: 9px; font-weight: 800; letter-spacing: .1em; text-align: center; padding: 26px 4px 4px; }
+.tel-barra { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #2a313a; }
+.tel-barra b { font-size: 15px; }
+.tel-barra .quien { margin-left: auto; display: flex; align-items: center; gap: 2px; background: #1b2027; border: 1px solid #2a313a; border-radius: 9px; padding: 2px 3px; }
+.tel-barra .quien span { font: 700 13px var(--dato); padding: 0 4px; }
+.tel-barra .quien button { background: none; border: 0; width: 26px; height: 26px; font-size: 16px; font-weight: 800; border-radius: 6px; color: #f2f4f7; }
+.tel-barra .quien button:hover { background: #2a313a; }
+.heroe { padding: 12px 14px 13px; color: #fff; transition: background .4s; }
+.heroe[data-e="normal"] { background: #0f6b3e; } .heroe[data-e="preparate"], .heroe[data-e="humo"] { background: #a86f00; }
+.heroe[data-e="evacuar"] { background: #e0202c; } .heroe[data-e="refugio"] { background: #5b34c4; } .heroe[data-e="fuego"] { background: #3a0d05; }
+.heroe small { font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .9; }
+.heroe h3 { font-size: 26px; line-height: 1.05; letter-spacing: -.02em; margin: 2px 0 7px; }
+.heroe .dest { background: rgba(0,0,0,.24); border-radius: 10px; padding: 8px 10px; font-size: 14.5px; font-weight: 700; line-height: 1.3; }
+.heroe .dest span { display: block; font-weight: 500; font-size: 12.5px; opacity: .92; margin-top: 2px; }
+.heroe p { font-size: 12.5px; margin-top: 7px; line-height: 1.35; }
+.tel-mapa { position: relative; margin: 10px 12px 0; border-radius: 12px; overflow: hidden; border: 1px solid #2a313a; aspect-ratio: 280 / 178; background: var(--papel); flex: none; }
+.tel-mapa > * { position: absolute; inset: 0; width: 100%; height: 100%; }
+#mini-fuego { filter: blur(1.5px); mix-blend-mode: multiply; }
+.pasos { list-style: none; padding: 9px 14px 0; display: grid; gap: 5px; font-size: 13px; overflow: hidden; }
+.pasos li { display: grid; grid-template-columns: 20px 1fr; gap: 8px; align-items: start; line-height: 1.3; }
+.pasos li b { width: 20px; height: 20px; border-radius: 50%; background: #2f6fed; font-size: 11.5px; display: flex; align-items: center; justify-content: center; }
+.tel-pie { margin-top: auto; padding: 10px 12px 14px; }
+.tel-pie div { background: #e0202c; border-radius: 12px; text-align: center; font-weight: 800; padding: 9px; font-size: 14.5px; }
+.tel-pie div span { display: block; font-size: 10.5px; font-weight: 600; opacity: .9; }
+.aviso-ruta { position: absolute; left: 12px; right: 12px; top: 92px; background: #2f6fed; color: #fff; border: 2px solid #fff; border-radius: 12px; padding: 9px 12px; font-size: 13.5px; font-weight: 800; box-shadow: 0 8px 24px rgba(0,0,0,.6); transform: translateY(-160%); opacity: 0; transition: transform .3s, opacity .3s; z-index: 3; pointer-events: none; }
+.aviso-ruta span { display: block; font-weight: 500; font-size: 12px; }
+.tel.ruta-nueva .aviso-ruta { transform: none; opacity: 1; }
+.tel.ruta-nueva { animation: vibra .5s; }
+@keyframes vibra { 0%, 100% { transform: none; } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+
+@media (max-width: 1100px) {
+  body { display: block; overflow: auto; }
+  .consola { padding: 16px; } .bitacora ul { max-height: 180px; }
+  .marco { width: 100%; } .margen { grid-template-columns: 1fr; gap: 12px; }
+  .vecino { padding: 14px 16px; } .tel { max-width: 360px; width: 100%; margin: 0 auto; min-height: 640px; }
+  .pista { white-space: normal; width: 86%; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<aside class="consola" aria-label="Central">
+  <div class="cart"><b>VIGÍA</b><span>Carta de simulación · Central</span><em>Hoy el prototipo tiene 2 postes reales. Esta carta muestra cómo funcionaría con 18, en un sector completo.</em></div>
+  <div class="mandos">
+    <button id="btn-play" class="ppal" type="button">▶ Iniciar incendio</button>
+    <div class="fila"><button id="btn-reset" type="button">Reiniciar</button><div class="seg" id="vel"><button type="button" data-v="1" class="on">×1</button><button type="button" data-v="2">×2</button><button type="button" data-v="4">×4</button></div></div>
+    <button id="btn-viento" type="button"></button>
+  </div>
+  <ol class="mastil" id="mastil" aria-label="Nivel del sector"></ol>
+  <div class="reloj"><span class="cond">Tiempo simulado</span><b id="reloj">00:00</b></div>
+  <dl class="cifras" id="cuentas"></dl>
+  <div class="bitacora"><h2 class="cond">Bitácora</h2><ul id="linea"></ul></div>
+</aside>
+
+<main class="hoja" aria-label="Mapa en vivo">
+  <div class="marco">
+    <div class="mapa" id="mapa">
+      <svg id="fondo" viewBox="0 0 1000 640" aria-hidden="true"></svg>
+      <canvas id="fuego" width="1000" height="640"></canvas>
+      <svg id="capa" viewBox="0 0 1000 640" role="img" aria-label="Mapa simulado con postes, fuego y rutas"></svg>
+      <div class="sello">SIMULACIÓN<small>SECTOR, POSTES Y FUEGO INVENTADOS</small></div>
+      <div class="pista" id="pista">Haz clic en el mapa para elegir dónde parte el fuego, o aprieta ▶</div>
+    </div>
+    <div class="pie" aria-live="polite"><div class="nivel" id="pie-nivel" data-n="0">0<small>NIVEL</small></div><div class="texto" id="narra"></div></div>
+  </div>
+  <div class="marco margen">
+    <div><h2 class="cond">Avance del fuego · lectura automática <i>beta</i></h2><ol class="secuencia" id="quemados"></ol><p class="lectura" id="lectura"></p></div>
+    <div><h2 class="cond">Signos</h2>
+      <div class="signos">
+        <span><i style="background:var(--verde)"></i>Normal</span><span><i style="background:var(--amarillo)"></i>Prepárate / humo</span>
+        <span><i style="background:var(--rojo)"></i>Evacuar: la flecha es la salida</span><span><i style="background:var(--tinta);border-color:var(--fuego)"></i>Fusible quemado</span>
+        <span><i style="background:var(--morado)"></i>Refugio: sin salida segura</span><span><i style="background:var(--azul)"></i>Punto de encuentro</span>
+        <span><i class="s-ruta"></i>Ruta del vecino elegido</span><span><i class="s-corte"></i>Camino cortado</span>
+      </div>
+      <p class="nota">El fuego es ilustrativo, no un modelo real. Toca un poste para ver su teléfono.</p>
+    </div>
+  </div>
+</main>
+
+<aside class="vecino" aria-label="Teléfono del vecino">
+  <p class="cond">Teléfono del vecino <i>simulación</i></p>
+  <div class="tel" id="tel">
+    <div class="tel-banda">MAQUETA · NO ES UN SERVICIO OFICIAL</div>
+    <div class="tel-barra"><b>Vigía</b><div class="quien"><button type="button" id="ant" aria-label="Poste anterior">‹</button><span id="quien"></span><button type="button" id="sig" aria-label="Poste siguiente">›</button></div></div>
+    <div class="aviso-ruta" role="status">Ruta actualizada<span id="aviso-det">El camino anterior se cortó.</span></div>
+    <div id="heroe" class="heroe" data-e="normal"></div>
+    <div class="tel-mapa"><canvas id="mini-fondo" width="560" height="356"></canvas><canvas id="mini-fuego" width="560" height="356"></canvas><svg id="mini" viewBox="0 0 280 178"></svg></div>
+    <ol class="pasos" id="pasos"></ol>
+    <div class="tel-pie"><div>Llamar al 130<span>Emergencias forestales</span></div></div>
+  </div>
+</aside>
+
+<script>
+(function () {
+"use strict";
+/* ============ Datos inventados del sector ============ */
+var W = 1000, H = 640, C = 16, GX = Math.ceil(W / C), GY = H / C;
+var M_PX = 2.5;          // metros por unidad del mapa
+var SEG_PASO = 15;       // segundos simulados por paso
+var MS_PASO = 230;       // milisegundos reales por paso a velocidad ×1
+var CAMINA = 75;         // metros por minuto a pie
+var BASE = 0.00095, K_VIENTO = 6.1, DURA = 10, R_HUMO = 115;
+var TINTA = "#15171a", PAPEL = "#eef1ea", ROJO = "#e0281c", AZUL = "#1b4fd6";
+
+var POSTES = [[1,150,110],[2,310,90],[3,480,80],[4,650,100],[5,800,150],[6,120,250],[7,290,230],[8,460,220],[9,630,240],[10,790,290],
+  [11,160,390],[12,320,370],[13,490,360],[14,650,390],[15,800,430],[16,300,500],[17,480,500],[18,660,530]];
+var SEGUROS = [{ id: "S1", nombre: "Cancha", x: 60, y: 505 }, { id: "S2", nombre: "Escuela", x: 470, y: 612 }, { id: "S3", nombre: "Sede social", x: 45, y: 175 }];
+var ARISTAS = ["01-02","02-03","03-04","04-05","06-07","07-08","08-09","09-10","11-12","12-13","13-14","14-15","16-17","17-18",
+  "01-06","06-11","02-07","07-12","12-16","03-08","08-13","13-17","04-09","09-14","14-18","05-10","10-15","15-18"]
+  .map(function (s) { return ["P-" + s.slice(0, 2), "P-" + s.slice(3)]; })
+  .concat([["S3","P-01"],["S3","P-06"],["S1","P-11"],["S1","P-16"],["S2","P-17"],["S2","P-16"],["S2","P-18"]]);
+var BOSQUES = [{ cx: 930, cy: 210, rx: 125, ry: 235 }, { cx: 700, cy: 22, rx: 330, ry: 56 }, { cx: 905, cy: 545, rx: 130, ry: 120 }];
+var FOCO_PREPARADO = [905, 105];
+var VIENTOS = [["N",0,-1,"↑"],["NE",1,-1,"↗"],["E",1,0,"→"],["SE",1,1,"↘"],["S",0,1,"↓"],["SO",-1,1,"↙"],["O",-1,0,"←"],["NO",-1,-1,"↖"]]
+  .map(function (v) { var l = Math.hypot(v[1], v[2]); return { n: v[0], dx: v[1] / l, dy: v[2] / l, f: v[3] }; });
+var RUMBOS = ["el este", "el noreste", "el norte", "el noroeste", "el oeste", "el suroeste", "el sur", "el sureste"];
+
+function $(id) { return document.getElementById(id); }
+function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function semilla(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function celda(x, y) { return Math.min(GY - 1, Math.max(0, Math.floor(y / C))) * GX + Math.min(GX - 1, Math.max(0, Math.floor(x / C))); }
+function enBosque(x, y) { return BOSQUES.some(function (b) { var u = (x - b.cx) / b.rx, v = (y - b.cy) / b.ry; return u * u + v * v < 1; }); }
+function lista(a) { return a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " y " + a[a.length - 1]; }
+function fDist(px) { var m = px * M_PX; return m < 1000 ? Math.round(m / 10) * 10 + " m" : (m / 1000).toFixed(1).replace(".", ",") + " km"; }
+function fMin(px) { return Math.max(1, Math.round(px * M_PX / CAMINA)) + " min a pie"; }
+function reloj(t) { var s = t * SEG_PASO, m = Math.floor(s / 60), r = s % 60; return (m < 10 ? "0" : "") + m + ":" + (r < 10 ? "0" : "") + r; }
+function minutos(pasos) { return Math.max(1, Math.round(pasos * SEG_PASO / 60)); }
+
+/* ============ Estado ============ */
+var nodos, postes, seguros, aristas, combustible = new Float32Array(GX * GY);
+var cel, edad, ardiendo, t, nivel, eventos, narr, rnd, viento = VIENTOS[5], tEvacuar, tAviso;
+var rutas = {}, cuenta = { rutas: 0 }, sel = "P-09", corriendo = false, iniciado = false, terminado = false, vel = 1, sucio = true, focos = [];
+
+(function () {
+  var r = semilla(11);
+  for (var y = 0; y < GY; y++) for (var x = 0; x < GX; x++) combustible[y * GX + x] = (enBosque(x * C + 8, y * C + 8) ? 1 : 0.42) * (0.85 + r() * 0.3);
+})();
+
+function reiniciar() {
+  nodos = {}; postes = []; seguros = []; aristas = [];
+  POSTES.forEach(function (a) { var p = { id: "P-" + (a[0] < 10 ? "0" : "") + a[0], x: a[1], y: a[2], tipo: "poste", humo: false, fuego: false, tHumo: 0, tFuego: 0, dist: 9999, cambio: 0 }; nodos[p.id] = p; postes.push(p); });
+  SEGUROS.forEach(function (s) { var n = { id: s.id, nombre: s.nombre, x: s.x, y: s.y, tipo: "seguro", malo: false }; nodos[n.id] = n; seguros.push(n); });
+  ARISTAS.forEach(function (e) {
+    var a = nodos[e[0]], b = nodos[e[1]], len = Math.hypot(a.x - b.x, a.y - b.y), n = Math.max(2, Math.round(len / 8)), ms = [];
+    for (var i = 0; i <= n; i++) { var j = celda(a.x + (b.x - a.x) * i / n, a.y + (b.y - a.y) * i / n); if (ms.indexOf(j) < 0) ms.push(j); }
+    aristas.push({ a: a, b: b, len: len, muestras: ms, cortada: false });
+  });
+  cel = new Uint8Array(GX * GY); edad = new Uint8Array(GX * GY); ardiendo = []; focos = [];
+  t = 0; nivel = 0; eventos = []; rnd = semilla(7); tEvacuar = 0; tAviso = 0; cuenta = { rutas: 0 };
+  corriendo = false; iniciado = false; terminado = false;
+  narr = { titulo: "Todo normal. 18 postes vigilando.", detalle: "Cada poste tiene un sensor de humo y un fusible térmico que se quema cuando el fuego llega a él." };
+  rutas = calcular(); postes.forEach(function (p) { p.ruta = rutaDe(p); p.clave = p.ruta ? p.ruta.ids.join(">") : ""; });
+  $("pista").hidden = false; $("btn-play").textContent = "▶ Iniciar incendio";
+  sucio = true; pintarTodo();
+}
+
+/* ============ Rutas: camino más corto que evita el fuego ============ */
+function calcular() {
+  var dist = {}, sig = {}, hecho = {}, ids = Object.keys(nodos);
+  ids.forEach(function (k) { dist[k] = Infinity; });
+  seguros.forEach(function (s) { if (!s.malo) dist[s.id] = 0; });
+  for (;;) {
+    var u = null, mejor = Infinity;
+    ids.forEach(function (k) { if (!hecho[k] && dist[k] < mejor) { mejor = dist[k]; u = k; } });
+    if (u === null) break;
+    hecho[u] = 1;
+    aristas.forEach(function (e) {
+      if (e.cortada) return;
+      var v = e.a.id === u ? e.b : (e.b.id === u ? e.a : null);
+      if (!v || hecho[v.id] || v.tipo === "seguro") return;
+      var w = e.len * (1 + ((nodos[u].humo || v.humo) ? 2.5 : 0));   // pasar por humo cuesta más
+      if (dist[u] + w < dist[v.id]) { dist[v.id] = dist[u] + w; sig[v.id] = u; }
+    });
+  }
+  return { dist: dist, sig: sig };
+}
+function rutaDe(p) {
+  if (p.fuego) return null;
+  var ids = [p.id], k = p.id, largo = 0, n = 0;
+  while (rutas.sig[k] && n++ < 40) { var s = rutas.sig[k]; largo += Math.hypot(nodos[k].x - nodos[s].x, nodos[k].y - nodos[s].y); k = s; ids.push(k); }
+  return nodos[k].tipo === "seguro" && ids.length > 1 ? { ids: ids, largo: largo, destino: nodos[k] } : null;
+}
+function estadoDe(p) {
+  if (p.fuego) return "fuego";
+  if (nivel === 0) return "normal";
+  if (nivel === 1) return p.humo ? "humo" : "preparate";
+  return p.ruta ? "evacuar" : "refugio";
+}
+
+/* ============ Fuego ============ */
+function encender(x, y) {
+  var cx = Math.floor(x / C), cy = Math.floor(y / C);
+  for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+    var nx = cx + dx, ny = cy + dy; if (nx < 0 || ny < 0 || nx >= GX || ny >= GY) continue;
+    var j = ny * GX + nx; if (cel[j] === 0) { cel[j] = 1; edad[j] = 0; ardiendo.push(j); }
+  }
+  focos.push([x, y]);
+}
+function ev(color, texto) { eventos.unshift({ t: t, c: color, texto: texto }); if (eventos.length > 60) eventos.pop(); }
+
+function paso() {
+  t++;
+  var sigue = [], nuevos = [], i, k;
+  for (k = 0; k < ardiendo.length; k++) {
+    i = ardiendo[k]; var x = i % GX, y = (i / GX) | 0;
+    for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+      if (!dx && !dy) continue;
+      var nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= GX || ny >= GY) continue;
+      var j = ny * GX + nx; if (cel[j] !== 0) continue;
+      var diag = dx && dy, cos = (dx * viento.dx + dy * viento.dy) * (diag ? 0.7071 : 1);
+      if (rnd() < BASE * combustible[j] * Math.exp(K_VIENTO * cos) * (diag ? 0.75 : 1)) { cel[j] = 1; edad[j] = 0; nuevos.push(j); }
+    }
+    if (++edad[i] >= DURA) cel[i] = 2; else sigue.push(i);
+  }
+  ardiendo = sigue.concat(nuevos);
+
+  // Sensores de cada poste
+  var nHumo = [], nFuego = [], cambio = false;
+  postes.forEach(function (p) {
+    if (p.fuego) return;
+    if (cel[celda(p.x, p.y)] !== 0) { p.fuego = true; p.tFuego = t; if (!p.humo) { p.humo = true; p.tHumo = t; } nFuego.push(p); cambio = true; return; }
+    var dMin = 9999, dEf = 9999;
+    for (var q = 0; q < ardiendo.length; q++) {
+      var c = ardiendo[q], fx = (c % GX) * C + 8, fy = ((c / GX) | 0) * C + 8, vx = p.x - fx, vy = p.y - fy, d = Math.hypot(vx, vy);
+      if (d < dMin) dMin = d;
+      var e = d * (1 - 0.35 * ((vx * viento.dx + vy * viento.dy) / (d || 1)));   // el humo viaja con el viento
+      if (e < dEf) dEf = e;
+    }
+    p.dist = dMin;
+    if (!p.humo && dEf < R_HUMO) { p.humo = true; p.tHumo = t; nHumo.push(p); cambio = true; }
+  });
+  // Caminos y puntos de encuentro
+  var cortes = [];
+  aristas.forEach(function (e) {
+    if (e.cortada) return;
+    for (var m = 0; m < e.muestras.length; m++) if (cel[e.muestras[m]] !== 0) { e.cortada = true; cortes.push(e); cambio = true; break; }
+  });
+  var malos = [];
+  seguros.forEach(function (s) {
+    if (s.malo) return;
+    var cerca = cel[celda(s.x, s.y)] !== 0;
+    for (var q = 0; !cerca && q < ardiendo.length; q++) { var c = ardiendo[q]; if (Math.hypot(s.x - ((c % GX) * C + 8), s.y - (((c / GX) | 0) * C + 8)) < 55) cerca = true; }
+    if (cerca) { s.malo = true; malos.push(s); cambio = true; }
+  });
+
+  // Niveles: un indicio = PREPÁRATE; segundo indicio o fusible = EVACUAR
+  var indicios = postes.filter(function (p) { return p.humo; }).length, hayFuego = postes.some(function (p) { return p.fuego; });
+  var subioA2 = false;
+  nHumo.forEach(function (p) { ev("#f4b400", "Humo detectado en " + p.id); });
+  if (nivel === 0 && indicios >= 1) {
+    nivel = 1; tAviso = t; var p0 = nHumo[0] || nFuego[0];
+    narr = { titulo: "El poste " + p0.id + " detectó humo.", detalle: "Primer indicio: todo el sector pasa a PREPÁRATE. Todavía no se evacúa." };
+    ev("#f4b400", "Sector en PREPÁRATE");
+  }
+  nFuego.forEach(function (p) { ev("#f26a1b", "Fusible quemado en " + p.id + ": el fuego llegó a ese poste"); });
+  if (nivel === 1 && (indicios >= 2 || hayFuego) && (t > tAviso || hayFuego)) {
+    nivel = 2; tEvacuar = t; subioA2 = true;
+    var p2 = nFuego[0] || nHumo[nHumo.length - 1];
+    narr = { titulo: "Segundo indicio en " + p2.id + ": el sector pasa a EVACUAR.", detalle: "Cada poste calcula su salida más corta que no pase por el fuego, y el teléfono la muestra." };
+    ev("#e0281c", "Sector en EVACUAR: cada poste muestra su ruta");
+  } else if (nFuego.length) {
+    narr = { titulo: "El fuego llegó a " + lista(nFuego.map(function (p) { return p.id; })) + ".", detalle: "Se quemó su fusible térmico. Los caminos que pasan por ahí quedan cortados." };
+  }
+  cortes.forEach(function (e) { if (e.a.tipo === "poste" && e.b.tipo === "poste" && !e.a.fuego && !e.b.fuego) ev("#e0281c", "Camino " + e.a.id + " – " + e.b.id + " cortado por el fuego"); });
+  malos.forEach(function (s) {
+    ev("#e0281c", "Punto de encuentro " + s.nombre + " ya no es seguro");
+    narr = { titulo: "La " + s.nombre + " ya no es segura.", detalle: "Se saca como destino y los postes que iban hacia allá cambian de punto de encuentro." };
+  });
+
+  // Recalcular rutas
+  if (cambio) {
+    rutas = calcular();
+    var cambiadas = [], sinSalida = [];
+    postes.forEach(function (p) {
+      var antes = p.clave, tenia = !!p.ruta;
+      p.ruta = rutaDe(p); p.clave = p.ruta ? p.ruta.ids.join(">") : "";
+      if (p.fuego || nivel < 2 || subioA2) return;
+      if (p.clave !== antes) { if (p.ruta) { cambiadas.push(p); p.cambio = performance.now(); } else if (tenia) sinSalida.push(p); }
+    });
+    if (cambiadas.length) {
+      cuenta.rutas += cambiadas.length; cuenta.subio = performance.now();
+      var nombres = cambiadas.map(function (p) { return p.id; });
+      ev("#5b8cff", (cambiadas.length === 1 ? "Ruta recalculada para " : cambiadas.length + " rutas recalculadas: ") + lista(nombres.slice(0, 4)) + (nombres.length > 4 ? " y " + (nombres.length - 4) + " más" : ""));
+      if (!nFuego.length && !malos.length) narr = { titulo: cambiadas.length === 1 ? "La ruta de " + nombres[0] + " cambió sola." : cambiadas.length + " rutas cambiaron solas.",
+        detalle: "El fuego cortó un camino. Los postes afectados ya muestran la nueva salida: " + lista(nombres.slice(0, 4)) + (nombres.length > 4 ? " y otros" : "") + "." };
+      if (nombres.indexOf(sel) >= 0) avisarTelefono(nodos[sel]);
+    }
+    sinSalida.forEach(function (p) {
+      ev("#9a7bf0", p.id + " quedó sin salida segura: orden de REFUGIO para ese poste");
+      narr = { titulo: p.id + " quedó sin salida segura.", detalle: "Todos sus caminos pasan por el fuego. La orden para ese poste cambia a REFUGIO." };
+    });
+    sucio = true;
+  }
+  // Si el poste del teléfono se quemó, pasar al vecino más cercano que sigue en pie
+  var ps = nodos[sel];
+  if (ps.fuego && t - ps.tFuego === 18) {
+    var cand = postes.filter(function (p) { return !p.fuego; }).sort(function (a, b) { return Math.hypot(a.x - ps.x, a.y - ps.y) - Math.hypot(b.x - ps.x, b.y - ps.y); })[0];
+    if (cand) { sel = cand.id; sucio = true; }
+  }
+  if (!ardiendo.length && iniciado) {
+    corriendo = false; terminado = true; $("btn-play").textContent = "▶ Repetir";
+    var q = postes.filter(function (p) { return p.fuego; }).length;
+    narr = { titulo: "El fuego salió del sector. Fin de la simulación.", detalle: "Alcanzó " + q + " de 18 postes y se recalcularon " + cuenta.rutas + " rutas sin intervención de nadie." };
+    ev("#1e9e57", "Fin de la simulación"); sucio = true;
+  }
+  if (t % 4 === 0) sucio = true;
+}
+
+var temporizador = 0;
+function avisarTelefono(p) {
+  $("aviso-det").textContent = p.ruta ? "Ahora hacia la " + p.ruta.destino.nombre + ". El camino anterior se cortó." : "El camino anterior se cortó.";
+  $("tel").classList.remove("ruta-nueva"); void $("tel").offsetWidth; $("tel").classList.add("ruta-nueva");
+  clearTimeout(temporizador); temporizador = setTimeout(function () { $("tel").classList.remove("ruta-nueva"); }, 3200);
+}
+
+/* ============ Dibujo ============ */
+var ICO = {
+  llama: '<path d="M0,-7c1,3.200 4,4.500 4,8.200a4,4 0 0 1-8,0c0,-1.600 .8,-2.500 1.600,-3.300 0,1.600 .8,2.400 1.600,2.400 0,-3.200 -.8,-4.900 .8,-7.300z" fill="#ff8a2e"/>',
+  flecha: '<path d="M-6,0h10M0,-5l5.500,5l-5.500,5" fill="none" stroke="#fff" stroke-width="2.800" stroke-linecap="round" stroke-linejoin="round"/>',
+  casa: '<path d="M-6,0l6,-5.500l6,5.500v6h-12z" fill="#fff"/>',
+  check: '<path d="M-5,0l3.500,3.500l6.500,-7" fill="none" stroke="#fff" stroke-width="2.800" stroke-linecap="round" stroke-linejoin="round"/>',
+  alerta: '<path d="M0,-6v6.500M0,4.500v.5" stroke="#15171a" stroke-width="3" stroke-linecap="round"/>',
+  bandera: '<path d="M-4,7v-13h9l-2,3.200l2,3.200h-9" fill="none" stroke="#fff" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/>',
+  equis: '<path d="M-4,-4l8,8M4,-4l-8,8" stroke="#fff" stroke-width="2.800" stroke-linecap="round"/>'
+};
+function pts(ids) { return ids.map(function (k) { return nodos[k].x + "," + nodos[k].y; }).join(" "); }
+
+function caminosSvg() {
+  var h = "";
+  aristas.forEach(function (e) { h += '<line x1="' + e.a.x + '" y1="' + e.a.y + '" x2="' + e.b.x + '" y2="' + e.b.y + '" stroke="#2a2d31" stroke-width="10" stroke-linecap="round"/>'; });
+  aristas.forEach(function (e) { h += '<line x1="' + e.a.x + '" y1="' + e.a.y + '" x2="' + e.b.x + '" y2="' + e.b.y + '" stroke="#ffffff" stroke-width="6.500" stroke-linecap="round"/>'; });
+  return h;
+}
+function fondoSvg() {
+  var h = '<defs><pattern id="arb" width="22" height="20" patternUnits="userSpaceOnUse"><g fill="none" stroke="#7fa172" stroke-width="1.200"><circle cx="6" cy="6" r="3.200"/><circle cx="17" cy="15" r="2.600"/></g></pattern></defs>';
+  h += '<rect width="1000" height="640" fill="' + PAPEL + '"/>';
+  var i;
+  for (i = 0; i < 16; i++) { var y = -30 + i * 46, d = i % 2 ? 24 : -20; h += '<path d="M-10,' + y + " C200," + (y - 40 + d) + " 430," + (y + 52) + " 640," + (y + 6 - d) + " S900," + (y - 30) + " 1010," + (y + 10 + d) + '" fill="none" stroke="#c9b991" stroke-width="' + (i % 4 === 0 ? 1.7 : 0.8) + '"/>'; }
+  var m = BOSQUES.map(function (b) { return '<ellipse cx="' + b.cx + '" cy="' + b.cy + '" rx="' + b.rx + '" ry="' + b.ry + '"/>'; }).join("");
+  h += '<g fill="#cfe0bf">' + m + '</g><g fill="url(#arb)">' + m + "</g>";
+  for (i = 1; i < 10; i++) h += '<line x1="' + i * 100 + '" y1="0" x2="' + i * 100 + '" y2="640" stroke="#a9bfd3" stroke-width=".7"/><text x="' + (i * 100 - 50) + '" y="11" text-anchor="middle" class="t-grilla">' + "ABCDEFGHIJ".charAt(i - 1) + "</text>";
+  h += '<text x="950" y="11" text-anchor="middle" class="t-grilla">J</text>';
+  for (i = 1; i < 7; i++) h += '<line x1="0" y1="' + i * 100 + '" x2="1000" y2="' + i * 100 + '" stroke="#a9bfd3" stroke-width=".7"/><text x="5" y="' + (i * 100 - 46) + '" class="t-grilla">' + i + "</text>";
+  h += '<text x="915" y="330" text-anchor="middle" class="t-zona">BOSQUE</text>';
+  h += caminosSvg();
+  var r = semilla(3);
+  aristas.forEach(function (e) {
+    var n = e.len > 150 ? 4 : 3, ux = (e.b.x - e.a.x) / e.len, uy = (e.b.y - e.a.y) / e.len, ang = Math.atan2(uy, ux) * 180 / Math.PI;
+    for (var k = 0; k < n; k++) {
+      var f = 0.16 + r() * 0.68, lado = r() < 0.5 ? -1 : 1, x = e.a.x + (e.b.x - e.a.x) * f - uy * 17 * lado, y = e.a.y + (e.b.y - e.a.y) * f + ux * 17 * lado;
+      if (enBosque(x, y) || x < 14 || y < 18 || x > 986 || y > 626) continue;
+      h += '<rect x="-3.500" y="-3" width="' + (5 + r() * 4).toFixed(1) + '" height="6" fill="#2a2d31" transform="translate(' + x.toFixed(0) + "," + y.toFixed(0) + ") rotate(" + ang.toFixed(0) + ')"/>';
+    }
+  });
+  h += '<g transform="translate(40,618)"><rect x="0" y="-4" width="100" height="5" fill="#15171a"/><rect x="100" y="-4" width="100" height="5" fill="#fff" stroke="#15171a" stroke-width="1"/>' +
+    '<text x="0" y="-8" class="t-grilla" style="fill:#15171a">0</text><text x="100" y="-8" text-anchor="middle" class="t-grilla" style="fill:#15171a">250</text><text x="200" y="-8" text-anchor="middle" class="t-grilla" style="fill:#15171a">500 m</text></g>';
+  return h;
+}
+
+var COL = { normal: "#1e9e57", preparate: "#f4b400", humo: "#f4b400", evacuar: "#e0281c", refugio: "#6a3fd0", fuego: "#15171a" };
+function posteSvg(p, chico) {
+  var e = estadoDe(p), g = '<g class="poste" data-poste="' + p.id + '" transform="translate(' + p.x + "," + p.y + ')">';
+  var r = chico ? 11 : 13, ahora = performance.now();
+  if (!chico && e !== "normal" && e !== "fuego" && p.humo) g += '<circle r="' + r + '" fill="#f26a1b" class="pulso"/>';
+  if (p.id === sel) g += '<circle r="' + (r + 7) + '" fill="none" stroke="' + PAPEL + '" stroke-width="5"/><circle r="' + (r + 7) + '" fill="none" stroke="' + AZUL + '" stroke-width="3" stroke-dasharray="5 4"/>';
+  g += '<circle r="' + r + '" fill="' + COL[e] + '" stroke="' + (e === "fuego" ? "#f26a1b" : TINTA) + '" stroke-width="2.200"' + (!chico && p.cambio && ahora - p.cambio < 1300 ? ' class="recien"' : "") + "/>";
+  if (e === "evacuar") { var s = nodos[p.ruta.ids[1]]; g += '<g transform="rotate(' + (Math.atan2(s.y - p.y, s.x - p.x) * 180 / Math.PI).toFixed(0) + ')">' + ICO.flecha + "</g>"; }
+  else if (e === "fuego") g += ICO.llama;
+  else if (e === "refugio") g += ICO.casa;
+  else if (e === "normal") g += ICO.check;
+  else g += ICO.alerta;
+  if (!chico || p.id === sel) {
+    g += '<text y="' + (-r - 6) + '" text-anchor="middle" class="t-cod">' + p.id + "</text>";
+    if (!chico) { var et = e === "fuego" ? "FUEGO" : e === "refugio" ? "REFUGIO" : (p.humo && e !== "normal" ? "HUMO" : ""); if (et) g += '<text y="' + (r + 13) + '" text-anchor="middle" class="t-est">' + et + "</text>"; }
+  }
+  return g + "</g>";
+}
+function seguroSvg(s) {
+  return '<g transform="translate(' + s.x + "," + s.y + ')"><rect x="-15" y="-15" width="30" height="30" fill="' + (s.malo ? "#8a9099" : AZUL) + '" stroke="' + TINTA + '" stroke-width="2.200"/>' + (s.malo ? ICO.equis : ICO.bandera) +
+    '<text y="-22" text-anchor="middle" class="t-seg">' + esc(s.nombre.toUpperCase()) + (s.malo ? " · NO SEGURA" : "") + "</text></g>";
+}
+function dinamicoSvg(mini) {
+  var h = "", ps = nodos[sel];
+  aristas.forEach(function (e) {
+    if (!e.cortada) return;
+    var mx = (e.a.x + e.b.x) / 2, my = (e.a.y + e.b.y) / 2;
+    h += '<line x1="' + e.a.x + '" y1="' + e.a.y + '" x2="' + e.b.x + '" y2="' + e.b.y + '" stroke="' + ROJO + '" stroke-width="4" stroke-dasharray="3 8" stroke-linecap="round"/>';
+    if (!mini) h += '<g transform="translate(' + mx + "," + my + ')"><circle r="8" fill="#fff" stroke="' + ROJO + '" stroke-width="2.200"/><path d="M-3,-3l6,6M3,-3l-6,6" stroke="' + ROJO + '" stroke-width="2.400" stroke-linecap="round"/></g>';
+  });
+  if (nivel === 2 && !mini) postes.forEach(function (p) {
+    if (!p.ruta || p.id === sel) return;
+    var s = nodos[p.ruta.ids[1]];
+    h += '<line class="flujo" x1="' + p.x + '" y1="' + p.y + '" x2="' + s.x + '" y2="' + s.y + '" stroke="' + AZUL + '" stroke-width="3.400" stroke-linecap="round"/>';
+  });
+  if (ps.ruta) {
+    var pp = pts(ps.ruta.ids), op = nivel === 2 ? 1 : 0.5;
+    h += '<polyline points="' + pp + '" fill="none" stroke="#0c2a7a" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="' + op + '"/>' +
+      '<polyline points="' + pp + '" fill="none" stroke="' + AZUL + '" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="' + op + '"/>' +
+      '<polyline class="ruta-mov" points="' + pp + '" fill="none" stroke="#fff" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  if (!mini) {
+    focos.forEach(function (f) { h += '<g transform="translate(' + f[0] + "," + f[1] + ')"><path d="M-7,-7l14,14M7,-7l-14,14" stroke="' + TINTA + '" stroke-width="2"/><text y="-12" text-anchor="middle" class="t-est">INICIO DEL FUEGO</text></g>'; });
+    h += '<g transform="translate(52,60)"><circle r="27" fill="' + PAPEL + '" stroke="' + TINTA + '" stroke-width="1.500"/><text y="-31" text-anchor="middle" class="t-est">N</text>' +
+      '<g transform="rotate(' + (Math.atan2(viento.dy, viento.dx) * 180 / Math.PI).toFixed(0) + ')"><path d="M-17,0H13M5,-8l10,8l-10,8" fill="none" stroke="' + ROJO + '" stroke-width="4"/></g>' +
+      '<text y="43" text-anchor="middle" class="t-est">VIENTO HACIA EL ' + viento.n + "</text></g>";
+  }
+  seguros.forEach(function (s) { h += seguroSvg(s); });
+  postes.forEach(function (p) { h += posteSvg(p, mini); });
+  return h;
+}
+
+/* Fuego en el lienzo (sobre papel: brasa roja, núcleo naranjo, quemado en carbón) */
+var ctx = $("fuego").getContext("2d"), mctx = $("mini-fuego").getContext("2d"), mfondo = $("mini-fondo").getContext("2d"), vista = [0, 0, 280, 178];
+function pintarFuego(ts) {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "rgba(48,38,32,.72)";
+  var i, k, c, x, y;
+  for (i = 0; i < cel.length; i++) if (cel[i] === 2) { ctx.beginPath(); ctx.arc((i % GX) * C + 8, ((i / GX) | 0) * C + 8, C * 0.82, 0, 6.2832); ctx.fill(); }
+  ctx.fillStyle = "rgba(70,70,76,.05)";
+  for (k = 0; k < ardiendo.length; k += 2) { c = ardiendo[k]; x = (c % GX) * C + 8; y = ((c / GX) | 0) * C + 8; ctx.beginPath(); ctx.arc(x + viento.dx * 54, y + viento.dy * 54, 42, 0, 6.2832); ctx.fill(); }
+  ctx.fillStyle = "rgba(214,36,24,.92)";
+  for (k = 0; k < ardiendo.length; k++) { c = ardiendo[k]; x = (c % GX) * C + 8; y = ((c / GX) | 0) * C + 8; ctx.beginPath(); ctx.arc(x, y, C * (0.8 + 0.16 * Math.sin(ts / 95 + c)), 0, 6.2832); ctx.fill(); }
+  ctx.fillStyle = "rgba(255,150,30,.96)";
+  for (k = 0; k < ardiendo.length; k++) { c = ardiendo[k]; if (edad[c] > 7) continue; x = (c % GX) * C + 8; y = ((c / GX) | 0) * C + 8; ctx.beginPath(); ctx.arc(x, y, C * (0.46 + 0.14 * Math.sin(ts / 70 + c * 3)), 0, 6.2832); ctx.fill(); }
+  ctx.fillStyle = "rgba(255,236,160,.96)";
+  for (k = 0; k < ardiendo.length; k++) { c = ardiendo[k]; if (edad[c] > 3) continue; x = (c % GX) * C + 8; y = ((c / GX) | 0) * C + 8; ctx.beginPath(); ctx.arc(x, y, C * 0.24, 0, 6.2832); ctx.fill(); }
+  mctx.clearRect(0, 0, 560, 356); mctx.drawImage($("fuego"), vista[0], vista[1], vista[2], vista[3], 0, 0, 560, 356);
+}
+
+/* ============ Paneles ============ */
+var MAST = [[3, "REFUGIO", "Sin salida segura: no salir a los caminos"], [2, "EVACUAR", "Salir ya por la ruta que marca el poste"], [1, "PREPÁRATE", "Hay humo: alistarse para salir"], [0, "NORMAL", "Postes vigilando"]];
+function pintarTodo() {
+  var q = postes.filter(function (p) { return p.fuego; }).sort(function (a, b) { return a.tFuego - b.tFuego; });
+  var nRef = nivel === 2 ? postes.filter(function (p) { return !p.fuego && !p.ruta; }).length : 0;
+  $("capa").innerHTML = dinamicoSvg(false);
+  $("mastil").innerHTML = MAST.map(function (m) {
+    var on = m[0] === nivel || (m[0] === 3 && nRef > 0);
+    return '<li data-n="' + m[0] + '"' + (on ? ' class="on"' : "") + "><b>" + m[0] + "</b><span>" + m[1] + (m[0] === 3 && nRef ? " · " + nRef + (nRef === 1 ? " poste" : " postes") : "") + "<small>" + m[2] + "</small></span></li>";
+  }).join("");
+  $("reloj").textContent = reloj(t);
+  $("pie-nivel").setAttribute("data-n", nivel); $("pie-nivel").innerHTML = nivel + "<small>NIVEL</small>";
+  $("narra").innerHTML = "<p>" + esc(narr.titulo) + "</p><p>" + esc(narr.detalle) + "</p>";
+  var sube = cuenta.subio && performance.now() - cuenta.subio < 800;
+  $("cuentas").innerHTML = [
+    [postes.filter(function (p) { return p.humo && !p.fuego; }).length, "postes con humo"], [q.length, "fusibles quemados"],
+    [aristas.filter(function (e) { return e.cortada; }).length, "caminos cortados"], [cuenta.rutas, "rutas recalculadas", sube]
+  ].map(function (c) { return "<div" + (c[2] ? ' class="sube"' : "") + "><dd>" + c[0] + "</dd><dt>" + c[1] + "</dt></div>"; }).join("");
+  $("linea").innerHTML = eventos.length ? eventos.map(function (e) { return '<li style="--c:' + e.c + '"><time>' + reloj(e.t) + "</time><span>" + esc(e.texto) + "</span></li>"; }).join("")
+    : '<li style="--c:#1e9e57"><time>00:00</time><span>Sin eventos todavía.</span></li>';
+  $("quemados").innerHTML = q.map(function (p, i) { return "<li>" + (i + 1) + "º " + p.id + " <small>" + reloj(p.tFuego) + "</small></li>"; }).join("");
+  $("lectura").innerHTML = lectura(q);
+  pintarTelefono();
+}
+function lectura(q) {
+  if (!q.length) return nivel ? "Hay humo, pero ningún fusible quemado: todavía no se sabe dónde está el fuego." : "Sin fuego detectado. Cuando se queme un fusible, aquí se lee hacia dónde avanza.";
+  var a = q[0], otros = q.filter(function (p) { return p.tFuego > a.tFuego; });
+  if (!otros.length) return "El fuego está en <b>" + a.id + "</b>. Con un segundo fusible se sabrá hacia dónde avanza.";
+  var sx = 0, sy = 0, sv = 0;
+  otros.forEach(function (p) { sx += p.x - a.x; sy += p.y - a.y; sv += Math.hypot(p.x - a.x, p.y - a.y) * M_PX / ((p.tFuego - a.tFuego) * SEG_PASO / 60); });
+  var rumbo = RUMBOS[((Math.round(Math.atan2(-sy, sx) / (Math.PI / 4)) % 8) + 8) % 8], v = sv / otros.length;
+  var prox = postes.filter(function (p) { return !p.fuego && p.dist < 300; }).sort(function (x, y) { return x.dist - y.dist; }).slice(0, 3)
+    .map(function (p) { return "<b>" + p.id + "</b> en ~" + Math.max(1, Math.round(p.dist * M_PX / v)) + " min"; });
+  return "Avanza hacia <b>" + rumbo + "</b> a unos <b>" + Math.round(v / 5) * 5 + " m por minuto</b>, según el orden en que se quemaron los fusibles." +
+    (prox.length ? " Siguientes en riesgo: " + lista(prox) + "." : "") + " <span>Es una estimación.</span>";
+}
+function pintarTelefono() {
+  var p = nodos[sel], e = estadoDe(p), h = "", pasos = "";
+  $("quien").textContent = p.id;
+  var dest = p.ruta ? '<div class="dest">Hacia la ' + esc(p.ruta.destino.nombre) + " · " + fDist(p.ruta.largo) + " · " + fMin(p.ruta.largo) +
+    "<span>" + (p.ruta.ids.length > 2 ? "Pasa por " + p.ruta.ids.slice(1, -1).join(" → ") : "Camino directo") + "</span></div>" : "";
+  var q = postes.filter(function (x) { return x.fuego; }).sort(function (a, b) { return b.tFuego - a.tFuego; })[0];
+  if (e === "normal") h = "<small>Estás en el poste " + p.id + "</small><h3>Todo normal</h3>" + dest + "<p>Esta es tu ruta habitual al punto de encuentro.</p>";
+  else if (e === "preparate" || e === "humo") h = "<small>Nivel 1 de 3 · Prepárate</small><h3>Prepárate para salir</h3>" + dest + "<p>" + (p.humo ? "Tu poste detectó humo." : "Otro poste del sector detectó humo.") + " Ten lista tu mochila. Todavía no se evacúa.</p>";
+  else if (e === "evacuar") h = "<small>Nivel 2 de 3 · Evacuar</small><h3>EVACÚA AHORA</h3>" + dest + "<p>" + (q ? "El fuego llegó a " + q.id + " hace " + minutos(t - q.tFuego) + " min." : "Dos postes detectaron humo.") + " No vuelvas por tus cosas.</p>";
+  else if (e === "refugio") h = "<small>Nivel 3 de 3 · Refugio</small><h3>REFÚGIATE</h3><p>Todos los caminos desde tu poste pasan por el fuego. No salgas a los caminos. Refúgiate y llama al 130.</p>";
+  else h = "<small>Poste " + p.id + "</small><h3>El fuego llegó a este poste</h3><p>Su fusible se quemó a los " + reloj(p.tFuego) + ". " + (tEvacuar && tEvacuar < p.tFuego ? "La orden de evacuar salió " + minutos(p.tFuego - tEvacuar) + " min antes." : "") + " Toca otro poste en el mapa para ver su teléfono.</p>";
+  $("heroe").setAttribute("data-e", e); $("heroe").innerHTML = h;
+  if (p.ruta && e !== "refugio") {
+    p.ruta.ids.slice(1).forEach(function (k, i) {
+      var n = nodos[k], ant = nodos[p.ruta.ids[i]], d = fDist(Math.hypot(n.x - ant.x, n.y - ant.y));
+      pasos += "<li><b>" + (i + 1) + "</b><span>" + (n.tipo === "seguro" ? "Llega a la " + esc(n.nombre) + " (punto de encuentro), " + d + "." : (i === 0 ? "Camina hacia el poste " : "Sigue hasta el poste ") + n.id + ", " + d + ".") + "</span></li>";
+    });
+  }
+  $("pasos").innerHTML = pasos;
+  // Mapa chico: encuadra la ruta
+  var xs = (p.ruta ? p.ruta.ids : [p.id]).map(function (k) { return nodos[k].x; }), ys = (p.ruta ? p.ruta.ids : [p.id]).map(function (k) { return nodos[k].y; });
+  var x0 = Math.min.apply(0, xs) - 70, x1 = Math.max.apply(0, xs) + 70, y0 = Math.min.apply(0, ys) - 60, y1 = Math.max.apply(0, ys) + 60;
+  var w = Math.max(x1 - x0, 330), hh = Math.max(y1 - y0, 210), R = 280 / 178;
+  if (w / hh < R) w = hh * R; else hh = w / R;
+  var cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  vista = [cx - w / 2, cy - hh / 2, w, hh];
+  $("mini").setAttribute("viewBox", vista.join(" "));
+  $("mini").innerHTML = caminosSvg() + dinamicoSvg(true);
+  mfondo.fillStyle = PAPEL; mfondo.fillRect(0, 0, 560, 356);
+  mfondo.fillStyle = "#cfe0bf";
+  BOSQUES.forEach(function (b) { mfondo.beginPath(); mfondo.ellipse((b.cx - vista[0]) * 560 / w, (b.cy - vista[1]) * 356 / hh, b.rx * 560 / w, b.ry * 356 / hh, 0, 0, 6.2832); mfondo.fill(); });
+}
+
+/* ============ Controles y ciclo ============ */
+function iniciar(x, y) {
+  if (terminado) reiniciar();
+  if (!iniciado) { iniciado = true; encender(x === undefined ? FOCO_PREPARADO[0] : x, y === undefined ? FOCO_PREPARADO[1] : y); ev("#f26a1b", "Empieza el fuego (simulado)"); $("pista").hidden = true; }
+  corriendo = true; $("btn-play").textContent = "❚❚ Pausar"; sucio = true;
+}
+function alternar() { if (corriendo) { corriendo = false; $("btn-play").textContent = "▶ Seguir"; } else iniciar(); }
+function ponerViento(v) { viento = v; $("btn-viento").textContent = "Viento hacia el " + v.n + " " + v.f + " · cambiar"; }
+function elegir(id) { sel = id; sucio = true; }
+
+$("btn-play").onclick = alternar;
+$("btn-reset").onclick = reiniciar;
+$("btn-viento").onclick = function () { ponerViento(VIENTOS[(VIENTOS.indexOf(viento) + 1) % 8]); if (iniciado) ev("#a9b0a6", "El viento cambia: ahora hacia el " + viento.n); sucio = true; };
+$("vel").onclick = function (e) { var b = e.target.closest("[data-v]"); if (!b) return; vel = +b.getAttribute("data-v"); [].forEach.call(this.children, function (c) { c.classList.toggle("on", c === b); }); };
+$("ant").onclick = function () { elegir(postes[(postes.indexOf(nodos[sel]) + 17) % 18].id); };
+$("sig").onclick = function () { elegir(postes[(postes.indexOf(nodos[sel]) + 1) % 18].id); };
+$("mapa").onclick = function (e) {
+  var g = e.target.closest ? e.target.closest("[data-poste]") : null;
+  if (g) { elegir(g.getAttribute("data-poste")); return; }
+  var r = this.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+  if (terminado) return;
+  if (!iniciado) iniciar(x, y);
+  else { encender(x, y); ev("#f26a1b", "Nuevo foco por pavesas (simulado)"); corriendo = true; $("btn-play").textContent = "❚❚ Pausar"; sucio = true; }
+};
+document.addEventListener("keydown", function (e) {
+  if (e.target.tagName === "BUTTON" && e.key === " ") return;
+  if (e.key === " ") { e.preventDefault(); alternar(); }
+  else if (e.key === "r" || e.key === "R") reiniciar();
+  else if (e.key === "1" || e.key === "2" || e.key === "3") $("vel").children[+e.key - 1].click();
+});
+
+var ultimo = 0, acum = 0;
+function cuadro(ts) {
+  var dt = Math.min(200, ts - ultimo); ultimo = ts;
+  if (corriendo) { acum += dt * vel; var n = 0; while (acum >= MS_PASO && n < 8) { paso(); acum -= MS_PASO; n++; } $("reloj").textContent = reloj(t); }
+  pintarFuego(ts);
+  if (sucio) { sucio = false; pintarTodo(); }
+  requestAnimationFrame(cuadro);
+}
+
+ponerViento(VIENTOS[5]);
+reiniciar();
+$("fondo").innerHTML = fondoSvg();
+window.__demo = { avanzar: function (n) { if (!iniciado) iniciar(); for (var i = 0; i < n && !terminado; i++) paso(); sucio = true; },
+  estado: function () { return { t: t, nivel: nivel, ardiendo: ardiendo.length, quemados: postes.filter(function (p) { return p.fuego; }).length, rutas: cuenta.rutas, sel: sel, terminado: terminado }; } };
+requestAnimationFrame(cuadro);
+})();
+</script>
+</body>
+</html>
