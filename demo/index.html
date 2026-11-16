@@ -25,7 +25,7 @@ button:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
 .cond { font-stretch: 78%; letter-spacing: .09em; text-transform: uppercase; }
 
 /* ---------- Consola de la Central (margen de tinta) ---------- */
-.consola { background: var(--tinta); color: var(--papel); display: flex; flex-direction: column; min-height: 0; padding: 18px 18px 14px; gap: 14px; }
+.consola { background: var(--tinta); color: var(--papel); display: flex; flex-direction: column; min-height: 0; padding: 16px 18px 12px; gap: 11px; }
 .cart b { display: block; font-size: 46px; font-weight: 700; line-height: .9; letter-spacing: -.01em; font-stretch: 80%; }
 .cart span { display: block; margin-top: 7px; font-size: 12px; color: #a9b0a6; font-stretch: 78%; letter-spacing: .1em; text-transform: uppercase; }
 .cart em { display: block; font-style: normal; margin-top: 8px; font-size: 13.5px; line-height: 1.3; color: #d6dbd2; border-top: 1px solid #3a3f45; padding-top: 8px; }
@@ -35,10 +35,32 @@ button:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
 .mandos button:hover { border-color: var(--papel); }
 .mandos .ppal { background: var(--rojo); border-color: var(--rojo); min-height: 46px; font-size: 16px; }
 .mandos .fila { display: grid; grid-template-columns: 1fr auto; gap: 6px; }
+.mandos .cuadrado { width: 46px; min-height: 46px; padding: 0; font-size: 22px; letter-spacing: 0; }
 .seg { display: flex; }
 .seg button { border-left-width: 0; padding: 0 10px; font-family: var(--dato); letter-spacing: 0; }
 .seg button:first-child { border-left-width: 1.5px; }
 .seg button.on { background: var(--papel); color: var(--tinta); border-color: var(--papel); }
+
+.panel-viento { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: center; border: 1.5px solid #3a3f45; padding: 8px 10px 8px 8px; }
+.joy { position: relative; width: 96px; height: 96px; border-radius: 50%; border: 1.5px solid #6b7178; cursor: grab; touch-action: none; user-select: none;
+  background: linear-gradient(#3a3f45, #3a3f45) center / 1px 100% no-repeat, linear-gradient(#3a3f45, #3a3f45) center / 100% 1px no-repeat, #1b1e22; }
+.joy:active { cursor: grabbing; }
+.joy:focus-visible { outline: 3px solid #7fa6ff; outline-offset: 3px; }
+.joy::after { content: ""; position: absolute; inset: 27%; border: 1px dashed #4a5058; border-radius: 50%; pointer-events: none; }
+.joy-n { position: absolute; top: 1px; left: 50%; transform: translateX(-50%); font: 700 9px var(--dato); color: #a9b0a6; background: #1b1e22; padding: 0 2px; pointer-events: none; }
+.joy-linea { position: absolute; left: 50%; top: 50%; height: 4px; margin-top: -2px; background: var(--rojo); transform-origin: 0 50%; pointer-events: none; }
+.joy-perilla { position: absolute; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; background: var(--papel); border: 4px solid var(--rojo); box-shadow: 0 2px 7px rgba(0,0,0,.55); pointer-events: none; }
+.ajustes .cond { display: block; font-size: 10.5px; color: #a9b0a6; }
+.ajustes .cond b { font: 700 12px var(--dato); color: var(--papel); letter-spacing: 0; margin-left: 4px; }
+.ajustes .valor { font-size: 15px; font-weight: 700; line-height: 1.15; margin: 1px 0 9px; min-height: 1.15em; }
+#vel { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 24px; margin: 1px 0 0; background: transparent; cursor: ew-resize; border-radius: 0; }
+#vel::-webkit-slider-runnable-track { height: 3px; background: #7d848b; }
+#vel::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 24px; margin-top: -10.5px; background: var(--papel); border: 0; border-radius: 0; }
+#vel::-moz-range-track { height: 3px; background: #7d848b; }
+#vel::-moz-range-thumb { width: 14px; height: 24px; background: var(--papel); border: 0; border-radius: 0; }
+#vel:focus-visible { outline: 3px solid #7fa6ff; outline-offset: 2px; }
+.extremos { display: flex; justify-content: space-between; font-size: 10px; color: #7d848b; font-stretch: 80%; letter-spacing: .08em; text-transform: uppercase; }
+@media (max-height: 760px) { .cart em { display: none; } }
 
 .mastil { list-style: none; padding: 0; display: grid; gap: 3px; }
 .mastil li { display: grid; grid-template-columns: 34px 1fr; align-items: center; border: 1.5px solid #3a3f45; color: #7d848b; min-height: 40px; transition: background .3s, color .3s; }
@@ -169,7 +191,9 @@ button:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
 .ios-estado i { display: inline-block; width: 21px; height: 10px; border: 1.3px solid rgba(255,255,255,.75); border-radius: 3px; position: relative; }
 .ios-estado i::after { content: ""; position: absolute; inset: 1.3px; right: 5px; background: #fff; border-radius: 1px; }
 .ios-fecha { text-align: center; font-size: 10.5px; font-weight: 700; letter-spacing: .12em; opacity: .8; margin-top: 9px; }
-.ios-hora { text-align: center; font-size: 40px; font-weight: 300; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-bottom: 9px; }
+.ios-hora { text-align: center; font-size: 40px; font-weight: 300; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-bottom: 3px; }
+.ios-sat { text-align: center; font-size: 10.5px; font-weight: 600; opacity: .82; margin-bottom: 8px; }
+.ios-der { display: inline-flex; align-items: center; gap: 4px; }
 .notis { display: grid; gap: 6px; }
 .noti { display: grid; grid-template-columns: 28px 1fr; gap: 9px; background: rgba(238,240,248,.2); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-radius: 17px; padding: 8px 11px 9px 9px; }
 .noti-ico { width: 28px; height: 28px; border-radius: 7px; background: #34c759; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
@@ -197,11 +221,19 @@ button:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
 </head>
 <body>
 <aside class="consola" aria-label="Central">
-  <div class="cart"><b>VIGÍA</b><span>Carta de simulación · Central</span><em>Hoy el prototipo tiene 2 postes reales. Esta carta muestra cómo funcionaría con 18, en un sector completo.</em></div>
+  <div class="cart"><b>VIGÍA</b><span>Carta de simulación · Central</span><em>Hoy hay 2 postes reales. Esta carta muestra cómo sería con 18.</em></div>
   <div class="mandos">
-    <button id="btn-play" class="ppal" type="button">▶ Iniciar incendio</button>
-    <div class="fila"><button id="btn-reset" type="button">Reiniciar</button><div class="seg" id="vel"><button type="button" data-v="1" class="on">×1</button><button type="button" data-v="2">×2</button><button type="button" data-v="4">×4</button></div></div>
-    <button id="btn-viento" type="button"></button>
+    <div class="fila"><button id="btn-play" class="ppal" type="button">▶ Iniciar incendio</button><button id="btn-reset" class="cuadrado" type="button" title="Reiniciar (tecla R)" aria-label="Reiniciar">↺</button></div>
+    <div class="panel-viento">
+      <div class="joy" id="joy" role="slider" tabindex="0" aria-label="Viento: arrastra la perilla para cambiar la dirección y la fuerza"><span class="joy-n">N</span><i class="joy-linea" id="joy-linea"></i><b class="joy-perilla" id="joy-perilla"></b></div>
+      <div class="ajustes">
+        <p class="cond">Viento · arrastra la perilla</p>
+        <p class="valor" id="viento-txt"></p>
+        <label class="cond" for="vel">Velocidad <b id="vel-txt"></b></label>
+        <input type="range" id="vel" min="0" max="100" step="1" value="40" aria-label="Velocidad de la simulación">
+        <p class="extremos"><span>lenta</span><span>rápida</span></p>
+      </div>
+    </div>
   </div>
   <ol class="mastil" id="mastil" aria-label="Nivel del sector"></ol>
   <div class="reloj"><span class="cond">Tiempo simulado</span><b id="reloj">00:00</b></div>
@@ -229,7 +261,7 @@ button:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
         <span><i style="background:var(--morado)"></i>Refugio: sin salida segura</span><span><i style="background:var(--azul)"></i>Punto de encuentro</span>
         <span><i class="s-ruta"></i>Ruta del vecino elegido</span><span><i class="s-corte"></i>Camino cortado</span>
       </div>
-      <p class="nota">El fuego es ilustrativo, no un modelo real. Toca un poste para ver su teléfono. El SMS es una idea a futuro: el prototipo real todavía no envía mensajes de texto.</p>
+      <p class="nota">El fuego es ilustrativo, no un modelo real. Toca un poste para ver su teléfono. El SMS es una idea a futuro: el prototipo real todavía no envía mensajes de texto. Starlink es solo un ejemplo de red satelital; el proyecto no tiene relación con esa empresa.</p>
     </div>
   </div>
 </main>
@@ -245,11 +277,12 @@ button:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
     <ol class="pasos" id="pasos"></ol>
     <div class="tel-pie"><div>Llamar al 130<span>Emergencias forestales</span></div></div>
   </div>
-  <p class="cond">El mismo vecino · SMS sin app <i>idea a futuro</i></p>
+  <p class="cond">El mismo vecino · SMS satelital <i>idea a futuro</i></p>
   <div class="ios" id="ios" aria-label="Teléfono bloqueado que recibe los SMS de la central">
-    <div class="ios-estado"><span>Sin datos</span><i></i></div>
+    <div class="ios-estado"><span>Starlink</span><span class="ios-der"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><g transform="rotate(-45 11 11)" fill="#fff"><rect x="8.200" y="7" width="5.600" height="8" rx="1"/><rect x=".8" y="8.600" width="6" height="4.800"/><rect x="15.200" y="8.600" width="6" height="4.800"/></g><path d="M15.500 20.500a5 5 0 0 0 5-5" fill="none" stroke="#fff" stroke-width="1.700" stroke-linecap="round"/></svg>SAT<i></i></span></div>
     <p class="ios-fecha">HORA SIMULADA</p>
     <p class="ios-hora" id="ios-hora">15:00</p>
+    <p class="ios-sat">Conectado por satélite · solo SMS</p>
     <div class="notis" id="notis" aria-live="polite"></div>
   </div>
 </aside>
@@ -263,7 +296,7 @@ var M_PX = 2.5;          // metros por unidad del mapa
 var SEG_PASO = 15;       // segundos simulados por paso
 var MS_PASO = 230;       // milisegundos reales por paso a velocidad ×1
 var CAMINA = 75;         // metros por minuto a pie
-var BASE = 0.00095, K_VIENTO = 6.1, DURA = 10, R_HUMO = 115;
+var P_VIENTO = 0.424, P_CALMA = 0.05, K_VIENTO = 6.1, DURA = 10, R_HUMO = 115;   // con viento fuerte el fuego corre en una lengua; en calma avanza lento hacia todos lados
 var TINTA = "#15171a", PAPEL = "#eef1ea", ROJO = "#e0281c", AZUL = "#1b4fd6";
 
 var POSTES = [[1,150,110],[2,310,90],[3,480,80],[4,650,100],[5,800,150],[6,120,250],[7,290,230],[8,460,220],[9,630,240],[10,790,290],
@@ -292,7 +325,7 @@ function minutos(pasos) { return Math.max(1, Math.round(pasos * SEG_PASO / 60));
 
 /* ============ Estado ============ */
 var nodos, postes, seguros, aristas, combustible = new Float32Array(GX * GY);
-var cel, edad, ardiendo, t, nivel, eventos, narr, rnd, viento = VIENTOS[5], tEvacuar, tAviso;
+var cel, edad, ardiendo, t, nivel, eventos, narr, rnd, viento = { dx: -0.7071, dy: 0.7071, f: 1, n: "SO" }, tEvacuar, tAviso;
 var rutas = {}, cuenta = { rutas: 0, sms: 0 }, iosClave = "", sel = "P-09", corriendo = false, iniciado = false, terminado = false, vel = 1, sucio = true, focos = [];
 
 (function () {
@@ -364,7 +397,7 @@ function ev(color, texto) { eventos.unshift({ t: t, c: color, texto: texto }); i
 
 function paso() {
   t++;
-  var sigue = [], nuevos = [], i, k;
+  var sigue = [], nuevos = [], i, k, pBase = P_CALMA + (P_VIENTO - P_CALMA) * viento.f, kV = K_VIENTO * viento.f;
   for (k = 0; k < ardiendo.length; k++) {
     i = ardiendo[k]; var x = i % GX, y = (i / GX) | 0;
     for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
@@ -372,7 +405,7 @@ function paso() {
       var nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= GX || ny >= GY) continue;
       var j = ny * GX + nx; if (cel[j] !== 0) continue;
       var diag = dx && dy, cos = (dx * viento.dx + dy * viento.dy) * (diag ? 0.7071 : 1);
-      if (rnd() < BASE * combustible[j] * Math.exp(K_VIENTO * cos) * (diag ? 0.75 : 1)) { cel[j] = 1; edad[j] = 0; nuevos.push(j); }
+      if (rnd() < pBase * combustible[j] * Math.exp(kV * (cos - 1)) * (diag ? 0.75 : 1)) { cel[j] = 1; edad[j] = 0; nuevos.push(j); }
     }
     if (++edad[i] >= DURA) cel[i] = 2; else sigue.push(i);
   }
@@ -387,7 +420,7 @@ function paso() {
     for (var q = 0; q < ardiendo.length; q++) {
       var c = ardiendo[q], fx = (c % GX) * C + 8, fy = ((c / GX) | 0) * C + 8, vx = p.x - fx, vy = p.y - fy, d = Math.hypot(vx, vy);
       if (d < dMin) dMin = d;
-      var e = d * (1 - 0.35 * ((vx * viento.dx + vy * viento.dy) / (d || 1)));   // el humo viaja con el viento
+      var e = d * (1 - 0.35 * viento.f * ((vx * viento.dx + vy * viento.dy) / (d || 1)));   // el humo viaja con el viento
       if (e < dEf) dEf = e;
     }
     p.dist = dMin;
@@ -514,7 +547,7 @@ function pintarIos() {
     $("notis").innerHTML = p.sms.length ? p.sms.slice().reverse().slice(0, 5).map(function (x, i) {
       return '<div class="noti' + (i === 0 && fresco ? " nueva" : "") + '"><span class="noti-ico">' + ICO_SMS + '</span><div><div class="noti-cab"><b>VIGÍA · Central</b><time data-t="' + x.t + '"></time></div><p>' + esc(x.texto) +
         "</p><small>SMS al poste " + p.id + " · " + x.texto.length + " de 160 caracteres</small></div></div>";
-    }).join("") : '<p class="notis-vacio">Sin mensajes. Aquí llegan los SMS de la central para el poste ' + p.id + ", sin app y sin datos móviles.</p>";
+    }).join("") : '<p class="notis-vacio">Sin mensajes. Aquí llegan los SMS de la central para el poste ' + p.id + ": por satélite, sin app y sin internet.</p>";
     if (fresco) { $("ios").classList.remove("vibra"); void $("ios").offsetWidth; $("ios").classList.add("vibra"); clearTimeout(tVibra); tVibra = setTimeout(function () { $("ios").classList.remove("vibra"); }, 600); }
   }
   [].forEach.call($("notis").querySelectorAll("time"), function (el) { var d = t - +el.getAttribute("data-t"); el.textContent = d < 4 ? "ahora" : "hace " + minutos(d) + " min"; });
@@ -615,8 +648,8 @@ function dinamicoSvg(mini) {
   if (!mini) {
     focos.forEach(function (f) { h += '<g transform="translate(' + f[0] + "," + f[1] + ')"><path d="M-7,-7l14,14M7,-7l-14,14" stroke="' + TINTA + '" stroke-width="2"/><text y="-12" text-anchor="middle" class="t-est">INICIO DEL FUEGO</text></g>'; });
     h += '<g transform="translate(52,60)"><circle r="27" fill="' + PAPEL + '" stroke="' + TINTA + '" stroke-width="1.500"/><text y="-31" text-anchor="middle" class="t-est">N</text>' +
-      '<g transform="rotate(' + (Math.atan2(viento.dy, viento.dx) * 180 / Math.PI).toFixed(0) + ')"><path d="M-17,0H13M5,-8l10,8l-10,8" fill="none" stroke="' + ROJO + '" stroke-width="4"/></g>' +
-      '<text y="43" text-anchor="middle" class="t-est">VIENTO HACIA EL ' + viento.n + "</text></g>";
+      (viento.f ? '<g transform="rotate(' + (Math.atan2(viento.dy, viento.dx) * 180 / Math.PI).toFixed(0) + ") scale(" + (0.5 + 0.5 * viento.f).toFixed(2) + ')"><path d="M-17,0H13M5,-8l10,8l-10,8" fill="none" stroke="' + ROJO + '" stroke-width="4"/></g>' : '<circle r="4" fill="' + ROJO + '"/>') +
+      '<text y="43" text-anchor="middle" class="t-est">' + (viento.f ? "VIENTO HACIA EL " + viento.n : "SIN VIENTO") + "</text></g>";
   }
   seguros.forEach(function (s) { h += seguroSvg(s); });
   postes.forEach(function (p) { h += posteSvg(p, mini); });
@@ -631,7 +664,7 @@ function pintarFuego(ts) {
   var i, k, c, x, y;
   for (i = 0; i < cel.length; i++) if (cel[i] === 2) { ctx.beginPath(); ctx.arc((i % GX) * C + 8, ((i / GX) | 0) * C + 8, C * 0.82, 0, 6.2832); ctx.fill(); }
   ctx.fillStyle = "rgba(70,70,76,.05)";
-  for (k = 0; k < ardiendo.length; k += 2) { c = ardiendo[k]; x = (c % GX) * C + 8; y = ((c / GX) | 0) * C + 8; ctx.beginPath(); ctx.arc(x + viento.dx * 54, y + viento.dy * 54, 42, 0, 6.2832); ctx.fill(); }
+  for (k = 0; k < ardiendo.length; k += 2) { c = ardiendo[k]; x = (c % GX) * C + 8; y = ((c / GX) | 0) * C + 8; ctx.beginPath(); ctx.arc(x + viento.dx * 54 * viento.f, y + viento.dy * 54 * viento.f, 42, 0, 6.2832); ctx.fill(); }
   ctx.fillStyle = "rgba(214,36,24,.92)";
   for (k = 0; k < ardiendo.length; k++) { c = ardiendo[k]; x = (c % GX) * C + 8; y = ((c / GX) | 0) * C + 8; ctx.beginPath(); ctx.arc(x, y, C * (0.8 + 0.16 * Math.sin(ts / 95 + c)), 0, 6.2832); ctx.fill(); }
   ctx.fillStyle = "rgba(255,150,30,.96)";
@@ -717,13 +750,56 @@ function iniciar(x, y) {
   corriendo = true; $("btn-play").textContent = "❚❚ Pausar"; sucio = true;
 }
 function alternar() { if (corriendo) { corriendo = false; $("btn-play").textContent = "▶ Seguir"; } else iniciar(); }
-function ponerViento(v) { viento = v; $("btn-viento").textContent = "Viento hacia el " + v.n + " " + v.f + " · cambiar"; }
+var NOMBRES_V = ["E", "SE", "S", "SO", "O", "NO", "N", "NE"], vientoAnotado = "";
+function fuerzaTxt(f) { return f === 0 ? "calma" : f < 0.4 ? "suave" : f < 0.75 ? "medio" : "fuerte"; }
+function vientoTxt() { return viento.f ? "hacia el " + viento.n + ", " + fuerzaTxt(viento.f) : "en calma"; }
+/* Dirección (dx, dy) y fuerza (0 a 1). La perilla queda donde se suelta. */
+function fijarViento(dx, dy, fuerza) {
+  var l = Math.hypot(dx, dy) || 1, fz = Math.max(0, Math.min(1, fuerza));
+  if (fz < 0.1) fz = 0;
+  viento = { dx: dx / l, dy: dy / l, f: fz, n: NOMBRES_V[((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8] };
+  var R = 34, px = 48 + viento.dx * fz * R, py = 48 + viento.dy * fz * R;
+  $("joy-perilla").style.left = px + "px"; $("joy-perilla").style.top = py + "px";
+  $("joy-linea").style.width = (fz * R) + "px"; $("joy-linea").style.transform = "rotate(" + Math.atan2(viento.dy, viento.dx) + "rad)";
+  $("viento-txt").textContent = viento.f ? "Hacia el " + viento.n + " · " + fuerzaTxt(viento.f) : "Sin viento";
+  $("joy").setAttribute("aria-valuetext", "Viento " + vientoTxt());
+  sucio = true;
+}
+function anotarViento() {
+  if (vientoTxt() === vientoAnotado) return;
+  vientoAnotado = vientoTxt();
+  if (iniciado && !terminado) ev("#a9b0a6", "El viento cambia: ahora " + vientoAnotado);
+  sucio = true;
+}
+/* Velocidad: la barra va de muy lenta (×0,08) a rápida (×4), en escala logarítmica. */
+function fijarVel(pos) {
+  pos = Math.max(0, Math.min(100, pos));
+  $("vel").value = pos;
+  vel = 0.08 * Math.pow(50, pos / 100);
+  $("vel-txt").textContent = "×" + (vel < 1 ? vel.toFixed(2) : vel.toFixed(1)).replace(".", ",");
+}
 function elegir(id) { sel = id; sucio = true; }
 
 $("btn-play").onclick = alternar;
 $("btn-reset").onclick = reiniciar;
-$("btn-viento").onclick = function () { ponerViento(VIENTOS[(VIENTOS.indexOf(viento) + 1) % 8]); if (iniciado) ev("#a9b0a6", "El viento cambia: ahora hacia el " + viento.n); sucio = true; };
-$("vel").onclick = function (e) { var b = e.target.closest("[data-v]"); if (!b) return; vel = +b.getAttribute("data-v"); [].forEach.call(this.children, function (c) { c.classList.toggle("on", c === b); }); };
+(function () {
+  var joy = $("joy"), arrastrando = false;
+  function mover(e) {
+    var r = joy.getBoundingClientRect(), x = e.clientX - (r.left + r.width / 2), y = e.clientY - (r.top + r.height / 2), d = Math.hypot(x, y);
+    fijarViento(d ? x : viento.dx, d ? y : viento.dy, d / (r.width * 34 / 96));
+  }
+  joy.addEventListener("pointerdown", function (e) { arrastrando = true; try { joy.setPointerCapture(e.pointerId); } catch (x) {} mover(e); e.preventDefault(); });
+  joy.addEventListener("pointermove", function (e) { if (arrastrando) mover(e); });
+  function soltar() { if (arrastrando) { arrastrando = false; anotarViento(); } }
+  joy.addEventListener("pointerup", soltar); joy.addEventListener("pointercancel", soltar);
+  joy.addEventListener("keydown", function (e) {
+    var d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!d) return;
+    var x = viento.dx * viento.f + d[0] * 0.2, y = viento.dy * viento.f + d[1] * 0.2;
+    fijarViento(x || viento.dx, y || viento.dy, Math.hypot(x, y)); anotarViento(); e.preventDefault(); e.stopPropagation();
+  });
+})();
+$("vel").addEventListener("input", function () { fijarVel(+this.value); });
 $("ant").onclick = function () { elegir(postes[(postes.indexOf(nodos[sel]) + 17) % 18].id); };
 $("sig").onclick = function () { elegir(postes[(postes.indexOf(nodos[sel]) + 1) % 18].id); };
 $("mapa").onclick = function (e) {
@@ -735,10 +811,10 @@ $("mapa").onclick = function (e) {
   else { encender(x, y); ev("#f26a1b", "Nuevo foco por pavesas (simulado)"); corriendo = true; $("btn-play").textContent = "❚❚ Pausar"; sucio = true; }
 };
 document.addEventListener("keydown", function (e) {
-  if (e.target.tagName === "BUTTON" && e.key === " ") return;
+  if ((e.target.tagName === "BUTTON" || e.target.tagName === "INPUT") && e.key === " ") return;
   if (e.key === " ") { e.preventDefault(); alternar(); }
   else if (e.key === "r" || e.key === "R") reiniciar();
-  else if (e.key === "1" || e.key === "2" || e.key === "3") $("vel").children[+e.key - 1].click();
+  else if (e.key === "1" || e.key === "2" || e.key === "3") fijarVel([15, 65, 100][+e.key - 1]);
 });
 
 var ultimo = 0, acum = 0;
@@ -750,12 +826,13 @@ function cuadro(ts) {
   requestAnimationFrame(cuadro);
 }
 
-ponerViento(VIENTOS[5]);
+fijarViento(-1, 1, 1); vientoAnotado = vientoTxt(); fijarVel(40);
 reiniciar();
 $("fondo").innerHTML = fondoSvg();
 window.__demo = { avanzar: function (n) { if (!iniciado) iniciar(); for (var i = 0; i < n && !terminado; i++) paso(); sucio = true; },
   sms: function (id) { return nodos[id || sel].sms.map(function (x) { return reloj(x.t) + " [" + x.texto.length + "] " + x.texto; }); },
-  estado: function () { return { sms: cuenta.sms, t: t, nivel: nivel, ardiendo: ardiendo.length, quemados: postes.filter(function (p) { return p.fuego; }).length, rutas: cuenta.rutas, sel: sel, terminado: terminado }; } };
+  viento: function (dx, dy, fz) { fijarViento(dx, dy, fz); anotarViento(); },
+  estado: function () { return { viento: vientoTxt(), vel: +vel.toFixed(3), sms: cuenta.sms, t: t, nivel: nivel, ardiendo: ardiendo.length, quemados: postes.filter(function (p) { return p.fuego; }).length, rutas: cuenta.rutas, sel: sel, terminado: terminado }; } };
 requestAnimationFrame(cuadro);
 })();
 </script>
