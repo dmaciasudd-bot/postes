@@ -18,25 +18,26 @@
       '<rect x="-1.600" y="1.500" width="3.200" height="5" style="fill:' + v("casa-borde") + '" opacity=".75"/></g>';
   }
 
-  function defs() {
+  function defs(K) {
     return "<defs>" +
-      '<pattern id="m-puntos" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r=".9" style="fill:' + v("relieve") + '"/><circle cx="10" cy="11" r=".7" style="fill:' + v("relieve") + '"/></pattern>' +
-      '<pattern id="m-arboles" width="26" height="24" patternUnits="userSpaceOnUse">' +
+      '<pattern id="m-puntos' + K + '" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="3" cy="4" r=".9" style="fill:' + v("relieve") + '"/><circle cx="10" cy="11" r=".7" style="fill:' + v("relieve") + '"/></pattern>' +
+      '<pattern id="m-arboles' + K + '" width="26" height="24" patternUnits="userSpaceOnUse">' +
       '<g style="fill:' + v("arbol") + '"><path d="M7,2.500l4.500,7h-2.300l3.300,5.500h-11l3.300,-5.500h-2.300z"/><rect x="6.200" y="15" width="1.600" height="2.600"/>' +
       '<g opacity=".7"><path d="M20,14l3.600,5.600h-1.800l2.600,4.400h-8.800l2.600,-4.400h-1.800z"/></g>' +
       '<g opacity=".7"><path d="M20,-10l3.600,5.600h-1.800l2.600,4.400h-8.800l2.600,-4.400h-1.800z"/></g></g></pattern>' +
-      '<filter id="m-sombra" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="1.500" stdDeviation="1.600" flood-color="#000" flood-opacity=".4"/></filter>' +
+      '<filter id="m-sombra' + K + '" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="0" dy="1.500" stdDeviation="1.600" flood-color="#000" flood-opacity=".4"/></filter>' +
       "</defs>";
   }
 
   /* opciones: { estado, posteActual (código), ruta, rutaCortada, mostrarAvance } */
   function dibujar(svg, datos, op) {
     op = op || {};
-    var UI = window.UI, W = datos.sector.ancho, H = datos.sector.alto, h = [defs()], i;
+    var K = svg.id ? "-" + svg.id.replace(/[^a-z0-9_-]/gi, "") : "";
+    var UI = window.UI, W = datos.sector.ancho, H = datos.sector.alto, h = [defs(K)], i;
 
     // Terreno con textura suave y curvas de nivel
     h.push('<rect width="' + W + '" height="' + H + '" style="fill:' + v("terreno") + '"/>');
-    h.push('<rect width="' + W + '" height="' + H + '" fill="url(#m-puntos)"/>');
+    h.push('<rect width="' + W + '" height="' + H + '" fill="url(#m-puntos' + K + ')"/>');
     for (i = 0; i < 11; i++) {
       var y = -20 + i * 50, d = (i % 2 ? 26 : -22);
       h.push('<path d="M-10,' + y + " C80," + (y - 34 + d) + " 190," + (y + 44) + " " + (W + 10) + "," + (y - 8 + d) + '" fill="none" style="stroke:' + v("relieve") + '" stroke-width="1.100" opacity=".8"/>');
@@ -46,7 +47,7 @@
     var manchas = datos.bosques.map(function (b) { return '<ellipse cx="' + b.cx + '" cy="' + b.cy + '" rx="' + b.rx + '" ry="' + b.ry + '"/>'; }).join("");
     h.push('<g style="fill:' + v("bosque-borde") + '" transform="translate(0,2)">' + manchas + "</g>");
     h.push('<g style="fill:' + v("bosque") + '">' + manchas + "</g>");
-    h.push('<g fill="url(#m-arboles)">' + manchas + "</g>");
+    h.push('<g fill="url(#m-arboles' + K + ')">' + manchas + "</g>");
     h.push('<text x="' + datos.etiquetaBosque[0] + '" y="' + datos.etiquetaBosque[1] + '" class="m-zona">BOSQUE</text>');
 
     // Caminos con borde
@@ -77,7 +78,7 @@
     }
     if (op.ruta) {
       var p = op.ruta.puntos;
-      h.push('<polyline points="' + pts(p) + '" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" filter="url(#m-sombra)"/>');
+      h.push('<polyline points="' + pts(p) + '" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" filter="url(#m-sombra' + K + ')"/>');
       h.push('<polyline points="' + pts(p) + '" fill="none" stroke="' + AZUL + '" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>');
       h.push('<polyline class="m-ruta" points="' + pts(p) + '" fill="none" stroke="#cfe0ff" stroke-width="3" stroke-dasharray="9 11" stroke-linecap="round" stroke-linejoin="round"/>');
       for (i = 0; i < p.length - 1; i++) {
@@ -94,7 +95,7 @@
     var pe = datos.puntoEncuentro;
     h.push('<g transform="translate(' + pe.x + "," + pe.y + ')">' +
       '<circle r="17" fill="' + AZUL + '" opacity=".35" class="m-halo"/>' +
-      '<circle r="16" fill="' + AZUL + '" stroke="#fff" stroke-width="3" filter="url(#m-sombra)"/>' +
+      '<circle r="16" fill="' + AZUL + '" stroke="#fff" stroke-width="3" filter="url(#m-sombra' + K + ')"/>' +
       '<g transform="translate(1.500,0)">' + UI.iconoEnSvg("bandera", 19, "#fff") + "</g>" +
       '<text x="-23" y="-9" text-anchor="end" class="m-etq">PUNTO DE</text><text x="-23" y="3" text-anchor="end" class="m-etq">ENCUENTRO</text></g>');
 
@@ -102,6 +103,7 @@
     datos.postes.forEach(function (po) {
       var cat = op.estado ? window.Logica.categoriaPoste(op.estado, po.nodo) : { clave: po.pasivo ? "pasivo" : "desconocido" };
       var c = UI.CATEGORIAS[cat.clave] || UI.CATEGORIAS.desconocido;
+      var etq = cat.etiqueta !== undefined ? cat.etiqueta : c.texto;
       var actual = op.posteActual === po.codigo;
       var g = '<g transform="translate(' + po.x + "," + po.y + ')">';
       if (c.pulso) {
@@ -110,15 +112,15 @@
       }
       if (actual) g += '<circle r="21" fill="none" stroke="' + AZUL + '" stroke-width="3"/><circle r="21" fill="none" stroke="#fff" stroke-width="1" opacity=".9"/>';
       g += '<circle r="14" fill="' + c.color + '" stroke="' + (cat.clave === "sinsenal" ? "#11151a" : "#fff") + '" stroke-width="' + (cat.clave === "sinsenal" ? 2 : 3) + '"' +
-        (cat.clave === "sinsenal" ? ' stroke-dasharray="4 3"' : "") + ' filter="url(#m-sombra)"/>';
+        (cat.clave === "sinsenal" ? ' stroke-dasharray="4 3"' : "") + ' filter="url(#m-sombra' + K + ')"/>';
       g += UI.iconoEnSvg(c.icono, 17, c.tinta);
       // Etiqueta a la izquierda; si la ruta sale hacia la izquierda desde este poste, va a la derecha.
       var der = actual && op.ruta && op.ruta.puntos.length > 1 && op.ruta.puntos[1][0] < po.x;
       var ex = der ? 25 : -21, anc = der ? "start" : "end";
-      g += '<text x="' + ex + '" y="' + (c.texto ? -2 : 4) + '" text-anchor="' + anc + '" class="m-cod">' + esc(po.codigo) + "</text>";
-      if (c.texto) g += '<text x="' + ex + '" y="10" text-anchor="' + anc + '" class="m-est">' + esc(c.texto) + "</text>";
+      g += '<text x="' + ex + '" y="' + (etq ? -2 : 4) + '" text-anchor="' + anc + '" class="m-cod">' + esc(po.codigo) + "</text>";
+      if (etq) g += '<text x="' + ex + '" y="10" text-anchor="' + anc + '" class="m-est">' + esc(etq) + "</text>";
       if (actual) {
-        g += '<g transform="translate(0,-29)" filter="url(#m-sombra)"><path d="M-5,6L0,12L5,6Z" fill="' + AZUL + '"/><rect x="-38" y="-11" width="76" height="19" rx="9.500" fill="' + AZUL + '"/>' +
+        g += '<g transform="translate(0,-29)" filter="url(#m-sombra' + K + ')"><path d="M-5,6L0,12L5,6Z" fill="' + AZUL + '"/><rect x="-38" y="-11" width="76" height="19" rx="9.500" fill="' + AZUL + '"/>' +
           '<text y="2.500" text-anchor="middle" class="m-aqui">ESTÁS AQUÍ</text></g>';
       }
       if (op.mostrarAvance && op.estado) {

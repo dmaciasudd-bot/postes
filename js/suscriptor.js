@@ -1,6 +1,6 @@
 /* Conexión en tiempo real de la app pública (Vecino).
    - SOLO se suscribe a CONFIG.temaEstado (estado de los postes).
-   - SOLO publica en CONFIG.temaReportes (aviso del vecino a la Central), nunca retenido.
+   - SOLO publica en CONFIG.temaReportes (aviso del vecino a la Central y acuse de recibo anónimo), nunca retenido.
    - No se suscribe a los reportes: este teléfono nunca ve avisos de otras personas.
    Además escucha un BroadcastChannel para que una pestaña del mismo navegador que la Central
    funcione sin internet (demostración en el notebook).
@@ -15,6 +15,8 @@
     // op: { alEstado(fn obj), alCambiarConexion(fn bool) }
     var cfg = window.CONFIG || {};
     var cliente = null, conectado = false, canal = null;
+    var sesion = Math.random().toString(36).slice(2, 10);   // al azar y distinta cada vez que se abre la app
+    var ultimoSec = null;
 
     function avisar(c) {
       if (c === conectado) return;
@@ -22,11 +24,27 @@
       try { op.alCambiarConexion && op.alCambiarConexion(c); } catch (e) { /* nada */ }
     }
 
-    function recibirEstado(texto) {
+    function recibirEstado(texto, retenido) {
       try {
         var obj = JSON.parse(texto);
-        if (window.Logica.estadoValido(obj)) op.alEstado(obj);
+        if (!window.Logica.estadoValido(obj)) return;
+        op.alEstado(obj);
+        acusar(obj, retenido);
       } catch (e) { /* mensaje ajeno o roto: se ignora */ }
+    }
+
+    /* Acuse de recibo: "este teléfono recibió el aviso número N". Sale una sola vez por aviso nuevo,
+       por el mismo tema de los avisos de vecinos. No lleva poste, nombre ni ubicación: solo el número
+       del aviso y un identificador al azar de esta sesión, para que la Central cuente teléfonos y mida el tiempo. */
+    function acusar(obj, retenido) {
+      if (typeof obj.sec !== "number" || typeof obj.pub !== "number") return;
+      if (obj.sec === ultimoSec) return;
+      var primero = ultimoSec === null;
+      ultimoSec = obj.sec;
+      if (retenido || primero) return;   // lo que ya estaba guardado al conectarse no es un aviso nuevo
+      var json = JSON.stringify({ v: 1, id: Math.random().toString(36).slice(2, 12), ts: Date.now(), tipo: "acuse", sec: obj.sec, pub: obj.pub, d: sesion });
+      try { if (canal) canal.postMessage({ tipo: "reporte", json: json }); } catch (e) { /* nada */ }
+      try { if (cliente && conectado && cfg.temaReportes) cliente.publish(cfg.temaReportes, json, { qos: 0, retain: false }); } catch (e) { /* nada */ }
     }
 
     try {
@@ -47,7 +65,7 @@
           avisar(true);
           cliente.subscribe(cfg.temaEstado, { qos: 1 }, function () { /* nada */ });
         });
-        cliente.on("message", function (tema, carga) { if (tema === cfg.temaEstado) recibirEstado(carga.toString()); });
+        cliente.on("message", function (tema, carga, paquete) { if (tema === cfg.temaEstado) recibirEstado(carga.toString(), !!(paquete && paquete.retain)); });
         cliente.on("close", function () { avisar(false); });
         cliente.on("offline", function () { avisar(false); });
         cliente.on("error", function () { /* silencio: se reintenta solo */ });

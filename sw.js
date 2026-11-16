@@ -1,6 +1,6 @@
 /* Service worker de la app pública (Vecino): guarda TODA la app para que funcione en modo avión.
    Si cambias cualquier archivo, sube el número de VERSION para que los teléfonos se actualicen. */
-var VERSION = "vigia-publica-v1";
+var VERSION = "vigia-publica-v3";
 var ARCHIVOS = [
   "./",
   "index.html",
@@ -12,6 +12,7 @@ var ARCHIVOS = [
   "js/ui.js",
   "js/mapa.js",
   "js/suscriptor.js",
+  "js/extras.js",
   "js/vecino.js",
   "lib/mqtt.min.js",
   "fonts/inter-latin-wght-normal.woff2",

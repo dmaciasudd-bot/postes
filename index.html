@@ -14,6 +14,7 @@
 </head>
 <body class="vecino" data-tema="claro">
 
+<div class="banda-proto">Prototipo estudiantil · no es un servicio oficial</div>
 <div id="banda-sim" class="banda-sim" hidden><span>Simulación · datos de demostración</span></div>
 
 <!-- Portada -->
@@ -49,7 +50,12 @@
       <span class="etiqueta">Postes de la demostración</span>
       <div id="lista-postes" class="demo-postes"></div>
     </div>
+    <div>
+      <span class="etiqueta">Los tres niveles de alerta</span>
+      <ul id="niveles-mini" class="niveles-mini"></ul>
+    </div>
     <p class="nota-offline"><span id="ico-offline"></span><span><strong>Funciona sin internet.</strong> Instálala y ábrela una vez con conexión: el mapa y tu ruta quedan guardados en el teléfono.</span></p>
+    <button id="btn-ajustes2" class="btn btn-chico btn-bloque" type="button"><span id="ico-ajustes2"></span>Accesibilidad: voz, texto grande y contraste</button>
     <p class="nota">Rutas de ejemplo para demostración, no oficiales.</p>
   </div>
 </section>
@@ -58,9 +64,12 @@
 <section id="poste" hidden>
   <header class="barra">
     <span class="marca"><span id="logo-barra"></span><b>Vigía</b></span>
-    <button id="btn-cambiar" class="chip-poste" type="button" aria-label="Cambiar de poste">
-      <span><small>ESTÁS EN EL POSTE</small><b id="p-codigo">P-0000</b></span><span id="ico-cambiar"></span>
-    </button>
+    <span class="barra-der">
+      <button id="btn-ajustes" class="btn-icono" type="button" aria-label="Accesibilidad: voz, texto grande y contraste"><span id="ico-ajustes"></span></button>
+      <button id="btn-cambiar" class="chip-poste" type="button" aria-label="Cambiar de poste">
+        <span><small>ESTÁS EN EL POSTE</small><b id="p-codigo">P-0000</b></span><span id="ico-cambiar"></span>
+      </button>
+    </span>
   </header>
   <div class="tira-con"><span id="pastilla" class="pastilla" role="status" aria-live="polite"></span></div>
 
@@ -83,8 +92,8 @@
         <div class="reportes">
           <button class="btn btn-reporte" type="button" data-reporte="humo"><span data-ico="humo"></span>Veo humo</button>
           <button class="btn btn-reporte" type="button" data-reporte="fuego"><span data-ico="llama"></span>Veo fuego</button>
-          <button class="btn btn-reporte" type="button" data-reporte="ayuda"><span data-ico="boton"></span>Necesito ayuda para salir</button>
-          <button class="btn btn-reporte" type="button" data-reporte="asalvo"><span data-ico="check"></span>Llegué al punto de encuentro</button>
+          <button class="btn btn-reporte btn-ancho" type="button" data-reporte="asalvo"><span data-ico="check"></span>Llegué al punto de encuentro</button>
+          <button class="btn btn-reporte btn-ayuda" type="button" data-reporte="ayuda"><span data-ico="persona"></span><span>Necesito ayuda para salir<small>Para quien no puede evacuar solo. Es anónimo.</small></span></button>
         </div>
         <p id="reporte-msg" class="reporte-msg" role="status" aria-live="polite" hidden></p>
       </div>
@@ -92,6 +101,9 @@
         <h2 id="tiempo-titulo">Qué ha pasado</h2>
         <ul id="p-tiempo" class="tiempo"></ul>
       </div>
+      <h2 class="titulo-seccion titulo-prep">Prepárate antes · funciona sin conexión</h2>
+      <div id="p-preparacion" class="pila"></div>
+      <button id="btn-ficha" class="btn btn-chico btn-bloque" type="button"><span id="ico-ficha"></span>Imprimir la ficha de mi poste</button>
       <p id="p-conexion" class="nota"></p>
       <p class="nota"><strong>Rutas de ejemplo para demostración, no oficiales.</strong><br>Proyecto universitario · Equipo Enigma</p>
     </div>
@@ -106,6 +118,19 @@
   </div>
 </nav>
 
+<!-- Accesibilidad -->
+<dialog id="dlg-ajustes" class="hoja-ajustes">
+  <h2>Accesibilidad</h2>
+  <div id="aj-lista" class="aj-lista"></div>
+  <p id="aj-msg" class="sub" role="status"></p>
+  <div class="aj-pie">
+    <button id="btn-probar-voz" class="btn btn-chico" type="button">Probar la voz</button>
+    <button id="btn-ajustes-cerrar" class="btn btn-chico btn-primario" type="button">Listo</button>
+  </div>
+</dialog>
+<!-- Ficha del poste: solo se ve al imprimir -->
+<section id="ficha" class="ficha" aria-hidden="true"></section>
+
 <script src="lib/mqtt.min.js"></script>
 <script src="config.js"></script>
 <script src="datos.js"></script>
@@ -113,6 +138,7 @@
 <script src="js/ui.js"></script>
 <script src="js/mapa.js"></script>
 <script src="js/suscriptor.js"></script>
+<script src="js/extras.js"></script>
 <script src="js/vecino.js"></script>
 </body>
 </html>

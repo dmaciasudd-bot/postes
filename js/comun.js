@@ -17,18 +17,22 @@
   /* Cómo se pinta un poste. Siempre texto + ícono además del color. */
   function categoriaPoste(estado, nodo) {
     var p = estado && estado.postes ? estado.postes[nodo] : null;
-    if (!p) return { clave: "desconocido", texto: "", icono: "" };
-    if (p.pasivo) return { clave: "pasivo", texto: "SOLO QR", icono: "QR" };
-    if (p.fuego) return { clave: "fuego", texto: "FUEGO LLEGÓ AQUÍ", icono: "🔥" };
-    if (p.sinSenal) return { clave: "sinsenal", texto: "SIN SEÑAL", icono: "✕" };
-    if (p.estado === 3) return { clave: "refugio", texto: "REFUGIO", icono: "R" };
-    if (p.estado === 2) {
-      return estado.foco === nodo
-        ? { clave: "foco", texto: "ROJO · FOCO", icono: "▲" }
-        : { clave: "ruta", texto: "EVACUAR · RUTA", icono: "➜" };
-    }
-    if (p.estado === 1) return { clave: "preparate", texto: "AMARILLO", icono: "!" };
-    return { clave: "normal", texto: "VERDE", icono: "✓" };
+    if (!p) return { clave: "desconocido", luces: "", etiqueta: "" };
+    if (p.pasivo) return { clave: "pasivo", luces: "Solo QR, sin electrónica", etiqueta: "SOLO QR" };
+    // `luces` = lo que el poste muestra de verdad (igual que el firmware). `etiqueta` = texto corto del mapa.
+    var esFoco = estado.foco === nodo, r;
+    if (p.estado === 3) r = { clave: "refugio", luces: "Rojo y amarillo fijos · refugiarse", etiqueta: "REFUGIARSE" };
+    else if (p.estado === 2) {
+      if (esFoco) r = { clave: p.fuego ? "fuego" : "foco", luces: "Rojo rápido · alejarse", etiqueta: p.fuego ? "FUEGO AQUÍ" : "ALEJARSE" };
+      else if (p.fuego) r = { clave: "fuego", luces: "Rojo · el fuego pasó por aquí", etiqueta: "FUEGO PASÓ AQUÍ" };
+      else if (estado.foco > 0) r = { clave: "ruta", luces: "Verde parpadeando · ruta segura", etiqueta: "RUTA SEGURA" };
+      else r = { clave: "evacuar", luces: "Rojo · evacuar", etiqueta: "EVACUAR" };
+    } else if (p.estado === 1) {
+      r = esFoco ? { clave: "preparate", luces: "Amarillo rápido · aviso aquí", etiqueta: "AVISO AQUÍ" }
+        : { clave: "preparate", luces: "Amarillo · prepárate", etiqueta: "PREPÁRATE" };
+    } else r = { clave: "normal", luces: "Verde fijo", etiqueta: "NORMAL" };
+    if (p.sinSenal && r.clave !== "fuego") r = { clave: "sinsenal", luces: "Sin señal", etiqueta: "SIN SEÑAL" };
+    return r;
   }
 
   /* ¿Hay peligro en este nodo como para no pasar por ahí? */

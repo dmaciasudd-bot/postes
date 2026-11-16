@@ -61,7 +61,7 @@
     var clase, html;
     if (!enLinea()) {
       clase = "pastilla off";
-      html = UI.icono("sinsenal") + "<span><b>Sin conexión</b> · usando mapa guardado</span>";
+      html = UI.icono("sinsenal") + "<span><b>Sin conexión</b> · " + (estado ? "último estado " + L.hora(estado.pub || estado.ts).slice(0, 5) : "usando mapa guardado") + "</span>";
     } else if (estado && !estadoViejo()) {
       clase = "pastilla ok";
       html = UI.icono("enlinea") + "<span><b>En línea</b> · actualizado " + UI.hace(estado.pub || estado.ts) + "</span>";
@@ -79,34 +79,56 @@
     });
   }
 
-  /* ---------- Banda de estado ---------- */
+  /* ---------- Banda de estado ----------
+     Orden en tres líneas: qué hacer / hacia dónde / por qué y desde cuándo. */
   var HEROES = {
-    x: { ico: "ruta", etq: "Ruta guardada en este teléfono", orden: "Sin estado en vivo", grande: false },
-    0: { ico: "check", etq: "Estado normal", orden: "Sin alertas en tu sector", det: "No tienes que hacer nada. Revisa abajo tu ruta de evacuación para conocerla.", grande: false },
-    1: { ico: "alerta", etq: "Alerta amarilla", orden: "Prepárate para salir", det: "Hay un indicio de fuego cerca. Ten a mano llaves, agua, documentos y mascotas.", grande: true },
-    2: { ico: "evacuar", etq: "Alerta roja", orden: "Evacúa ahora hacia el punto de encuentro", det: "Sigue la ruta azul del mapa. No vuelvas por tus cosas.", grande: true },
-    3: { ico: "refugio", etq: "Refugio", orden: "No salgas, refúgiate", det: "Ya es tarde para salir por los caminos. Busca refugio ahora.", grande: true },
-    fuego: { ico: "llama", etq: "Fuego en este poste", orden: "El fuego está aquí. Aléjate ahora", det: "Sigue la ruta azul del mapa. No te quedes a mirar.", grande: true }
+    x: { ico: "ruta", etq: "Sin datos en vivo", orden: "Esta es tu ruta guardada", grande: false, peso: 0 },
+    0: { ico: "check", etq: "Sin alerta", orden: "Todo normal en tu sector", det: "No tienes que hacer nada ahora. Conoce tu ruta y deja lista tu mochila.", grande: false, peso: 0 },
+    fin: { ico: "check", etq: "Alerta terminada", orden: "La alerta terminó", det: "Todo volvió a normal. Si saliste, vuelve solo cuando sea seguro.", grande: false, peso: 0 },
+    1: { ico: "alerta", etq: "Nivel 1 de 3 · Prepárate", orden: "Prepárate para salir", det: "Ten a mano llaves, agua, remedios, documentos y mascotas. Si necesitas más tiempo para salir, sal ahora.", grande: true, peso: 1 },
+    2: { ico: "evacuar", etq: "Nivel 2 de 3 · Evacuar", orden: "Evacúa ahora", det: "No vuelvas por tus cosas. Ayuda a quien lo necesite.", grande: true, peso: 2 },
+    3: { ico: "refugio", etq: "Nivel 3 de 3 · Refugio", orden: "No salgas, refúgiate", det: "Ya es tarde para salir por los caminos. Busca refugio ahora.", grande: true, peso: 4 },
+    fuego: { ico: "llama", etq: "Nivel 2 de 3 · Evacuar", orden: "El fuego está aquí. Aléjate ahora", det: "No te quedes a mirar ni vuelvas por tus cosas.", grande: true, peso: 3 }
   };
+  var MOTIVOS = { vecino: "Un vecino dio el aviso", humo: "Humo detectado", fusible: "El fuego llegó", central: "Orden de la central" };
+  var textoVoz = "";
 
-  function pintarHeroe(fuegoAqui) {
+  function pintarHeroe(fuegoAqui, el) {
     var clave = !estado ? "x" : (fuegoAqui && estado.global < 3 ? "fuego" : String(estado.global));
-    var hd = HEROES[clave], caja = $("p-estado");
-    var det = hd.det, extra = "";
+    var u = estado ? estado.ult : null;
+    var terminada = clave === "0" && u && u.estado === 0 && (u.tipo === "orden" || u.tipo === "recibido") && Date.now() - u.ts < 15 * 60000;
+    var hd = HEROES[terminada ? "fin" : clave], caja = $("p-estado");
+    var det = hd.det, detVoz = hd.det || "", extra = "", destino = "";
     if (clave === "x") {
-      det = (enLinea() ? "Todavía no llegan datos de la central. " : "No hay conexión. ") +
+      det = detVoz = (enLinea() ? "Todavía no llegan datos de la central. " : "No hay conexión. ") +
         "Guíate por las luces y la sirena del poste: verde es normal, amarillo prepárate, rojo evacúa.";
     }
     if (estado && estado.global >= 1) {
-      var partes = [];
-      if (estado.foco > 0) partes.push("Foco informado en el poste " + esc(L.codigoDe(DATOS, estado.foco)));
-      if (estado.alertaDesde) partes.push("alerta desde las " + L.hora(estado.alertaDesde).slice(0, 5));
+      var partes = [], foco = estado.foco > 0 ? esc(L.codigoDe(DATOS, estado.foco)) : "";
+      if (MOTIVOS[estado.causa]) partes.push(MOTIVOS[estado.causa] + (foco && estado.causa !== "central" ? (estado.causa === "fusible" ? " a " : " en ") + foco : ""));
+      else if (foco) partes.push("Foco en " + foco);
+      if (estado.alertaDesde) partes.push("desde las " + L.hora(estado.alertaDesde).slice(0, 5));
       if (partes.length) extra = "<small>" + partes.join(" · ") + "</small>";
+      // Avance del fuego: postes cuyo fusible se quemó en esta alerta, en orden.
+      var fuegos = estado.avance.filter(function (x) { return x && x.tipo === "fuego"; }).map(function (x) {
+        return esc(L.codigoDe(DATOS, x.nodo)) + " (" + L.hora(x.ts).slice(0, 5) + ")";
+      });
+      if (fuegos.length) det += " <b>El fuego llegó a " + fuegos.join(" y después a ") + ".</b>";
     }
+    if (estado && (estado.global === 1 || estado.global === 2) && el) {
+      destino = (estado.global === 1 ? "Si hay que salir: " : (el.esAlternativa ? "Ruta alternativa: " : "")) +
+        "hacia la " + DATOS.puntoEncuentro.nombre + ", por el " + el.ruta.nombre + " · " + el.ruta.distancia + ", " + el.ruta.tiempo;
+    }
+    if (destino) destino = destino.charAt(0).toUpperCase() + destino.slice(1);
+    textoVoz = hd.orden + ". " + (destino ? destino.replace(" · ", ". ") + ". " : "") + detVoz;
     caja.setAttribute("data-e", clave);
     caja.className = "heroe" + (hd.grande ? " grande" : "");
-    caja.innerHTML = '<div class="heroe-in"><div class="heroe-cab"><span class="heroe-ico">' + UI.icono(hd.ico) + '</span><p class="heroe-etq">' + hd.etq + extra + "</p></div>" +
-      '<h2 class="heroe-orden">' + hd.orden + '</h2><p class="heroe-det">' + det + "</p></div>";
+    caja.innerHTML = '<div class="heroe-in"><div class="heroe-cab"><span class="heroe-ico">' + UI.icono(hd.ico) + '</span><p class="heroe-etq">' + hd.etq + extra + "</p>" +
+      (window.Extras.hayVoz ? '<button class="btn-voz" type="button" data-voz aria-label="Escuchar la orden en voz alta">' + UI.icono("voz") + "</button>" : "") + "</div>" +
+      '<h2 class="heroe-orden">' + hd.orden + "</h2>" +
+      (destino ? '<p class="heroe-dest">' + UI.icono("ruta") + "<span>" + esc(destino) + "</span></p>" : "") +
+      '<p class="heroe-det">' + det + "</p></div>";
+    window.Extras.alCambiarOrden(hd.peso, textoVoz);
     return clave;
   }
 
@@ -133,14 +155,17 @@
     var el = L.elegirRuta(p, estado);
     var miPoste = estado ? estado.postes[p.nodo] : null;
     var fuegoAqui = !!estado && ((miPoste && miPoste.fuego) || (estado.global >= 2 && estado.foco === p.nodo));
-    pintarHeroe(fuegoAqui);
+    pintarHeroe(fuegoAqui, el);
 
     // Aviso de dato viejo
     var aviso = $("p-aviso");
     if (estado && (estadoViejo() || !enLinea())) {
       aviso.hidden = false;
       aviso.innerHTML = UI.icono("reloj") + "<span>Último dato de la central: " + L.hora(estado.pub || estado.ts) +
-        ". Puede haber cambiado. Guíate también por las luces y la sirena del poste.</span>";
+        ". Puede haber cambiado. Guíate también por las luces y la sirena del poste." + (enLinea() ? "" : " Sin señal, la llamada al 130 puede no salir.") + "</span>";
+    } else if (!enLinea()) {
+      aviso.hidden = false;
+      aviso.innerHTML = UI.icono("sinsenal") + "<span>Sin conexión: ves la ruta guardada, no el estado en vivo. Guíate por las luces y la sirena del poste. Sin señal, la llamada al 130 puede no salir.</span>";
     } else aviso.hidden = true;
 
     // Mapa
@@ -149,7 +174,7 @@
       rutaCortada: el.esAlternativa ? p.rutaPrincipal : null
     });
     $("leyenda").innerHTML = '<span class="ley"><i class="ley-ruta"></i>Tu ruta</span><span class="ley"><i class="ley-pe">' + UI.icono("bandera") + "</i>Punto de encuentro</span>" +
-      (estado ? UI.leyenda(["normal", "preparate", "foco", "fuego", "sinsenal"], { preparate: "Prepárate", foco: "Foco del fuego", fuego: "Fuego llegó aquí" }) : "");
+      (estado ? UI.leyenda(["normal", "preparate", "foco", "ruta", "fuego", "sinsenal"], { preparate: "Prepárate", foco: "Foco: aléjate", ruta: "Poste en ruta segura", fuego: "El fuego llegó aquí" }) : "");
 
     // Ruta
     var h = "";
@@ -247,6 +272,41 @@
   $("mapa-titulo").innerHTML = UI.icono("poste") + "Mapa del sector";
   $("tiempo-titulo").innerHTML = UI.icono("reloj") + "Qué ha pasado";
   $("reporte-titulo").innerHTML = UI.icono("sirena") + "Avisar a la central";
+  $("ico-ajustes").innerHTML = UI.icono("ajustes");
+  $("ico-ajustes2").innerHTML = UI.icono("ajustes");
+  $("ico-ficha").innerHTML = UI.icono("imprimir");
+  $("niveles-mini").innerHTML = [["n1", "alerta", "Prepárate", "amarillo"], ["n2", "evacuar", "Evacuar", "rojo y sirena"], ["n3", "refugio", "Refugio", "rojo y amarillo"]].map(function (n, i) {
+    return '<li class="' + n[0] + '">' + UI.icono(n[1]) + "<span><b>" + (i + 1) + " · " + n[2] + "</b><small>" + n[3] + "</small></span></li>";
+  }).join("");
+
+  /* Accesibilidad, voz y preparación (js/extras.js) */
+  var dlgAj = $("dlg-ajustes");
+  function abrirAjustes() { window.Extras.pintarAjustes(); try { dlgAj.showModal(); } catch (e) { dlgAj.setAttribute("open", ""); } }
+  $("btn-ajustes").addEventListener("click", abrirAjustes);
+  $("btn-ajustes2").addEventListener("click", abrirAjustes);
+  $("btn-ajustes-cerrar").addEventListener("click", function () { try { dlgAj.close(); } catch (e) { dlgAj.removeAttribute("open"); } });
+  $("btn-probar-voz").addEventListener("click", function () {
+    var ok = window.Extras.hablar(textoVoz || "Así se escucha la orden en voz alta.");
+    $("aj-msg").textContent = ok ? "" : "Este teléfono no tiene voz disponible.";
+  });
+  $("p-estado").addEventListener("click", function (ev) { if (ev.target.closest("[data-voz]")) window.Extras.hablar(textoVoz); });
+  window.Extras.pintarPreparacion();
+
+  /* Ficha para imprimir: "Mi poste es P-1452", con las dos rutas, para dejar en el refrigerador. */
+  $("btn-ficha").addEventListener("click", function () {
+    if (!posteActual) return;
+    var p = posteActual;
+    function ruta(t, r) {
+      return r ? "<section><h3>" + t + " · " + esc(r.distancia) + ", " + esc(r.tiempo) + "</h3><ol>" + r.pasos.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ol></section>" : "";
+    }
+    $("ficha").innerHTML = '<p class="ficha-etq">Vigía · Postes de alerta de incendios</p><h1>Mi poste es <b>' + esc(p.codigo) + "</b></h1>" +
+      '<p class="ficha-130">Emergencias forestales: llama al <b>130</b> y dicta el código <b>' + esc(p.codigo) + "</b>.</p>" +
+      "<p>Punto de encuentro: <b>" + esc(DATOS.puntoEncuentro.nombre) + "</b></p>" +
+      ruta("Ruta principal (" + esc(p.rutaPrincipal.nombre) + ")", p.rutaPrincipal) + ruta("Ruta alternativa (" + esc(p.rutaAlternativa ? p.rutaAlternativa.nombre : "") + ")", p.rutaAlternativa) +
+      '<section><h3>Las luces del poste</h3><ul><li><b>Amarillo y pitido:</b> prepárate para salir.</li><li><b>Sirena:</b> evacúa. Poste en rojo: aléjate de él. Poste en verde parpadeando: ruta segura.</li><li><b>Rojo y amarillo fijos:</b> ya no salgas, refúgiate.</li></ul></section>' +
+      '<p class="ficha-nota">Prototipo estudiantil (Equipo Enigma). Rutas de ejemplo para demostración, no oficiales.</p>';
+    window.print();
+  });
   Array.prototype.forEach.call(document.querySelectorAll("[data-ico]"), function (el) { el.innerHTML = UI.icono(el.getAttribute("data-ico")); });
 
   $("lista-postes").innerHTML = DATOS.postes.map(function (p) {

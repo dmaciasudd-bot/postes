@@ -11,6 +11,7 @@
        puntos   = por dónde pasa la línea de la ruta en el mapa
        pasaPor  = nodos de OTROS postes por los que pasa la ruta
                   (si el fuego está en uno de ellos, la ruta se considera cortada)
+       nombre   = nombre corto de la ruta ("camino bajo")
        distancia, tiempo, pasos = textos que ve el vecino
 */
 window.DATOS = {
@@ -22,6 +23,7 @@ window.DATOS = {
     {
       nodo: 1, codigo: "P-1451", x: 222, y: 292, pasivo: false,
       rutaPrincipal: {
+        nombre: "camino principal",
         puntos: [[222, 292], [292, 404]],
         pasaPor: [],
         distancia: "300 m", tiempo: "4 min a pie",
@@ -36,6 +38,7 @@ window.DATOS = {
     {
       nodo: 2, codigo: "P-1452", x: 152, y: 196, pasivo: false,
       rutaPrincipal: {
+        nombre: "camino principal",
         puntos: [[152, 196], [222, 292], [292, 404]],
         pasaPor: [1],
         distancia: "600 m", tiempo: "8 min a pie",
@@ -46,6 +49,7 @@ window.DATOS = {
         ]
       },
       rutaAlternativa: {
+        nombre: "camino bajo",
         puntos: [[152, 196], [100, 206], [47, 205], [44, 290], [90, 380], [180, 424], [292, 404]],
         pasaPor: [],
         distancia: "1,1 km", tiempo: "15 min a pie",
@@ -60,6 +64,7 @@ window.DATOS = {
     {
       nodo: 3, codigo: "P-1453", x: 88, y: 100, pasivo: true,
       rutaPrincipal: {
+        nombre: "camino principal",
         puntos: [[88, 100], [152, 196], [222, 292], [292, 404]],
         pasaPor: [2, 1],
         distancia: "900 m", tiempo: "12 min a pie",
@@ -70,6 +75,7 @@ window.DATOS = {
         ]
       },
       rutaAlternativa: {
+        nombre: "camino bajo",
         puntos: [[88, 100], [48, 180], [44, 290], [90, 380], [180, 424], [292, 404]],
         pasaPor: [],
         distancia: "1,2 km", tiempo: "17 min a pie",

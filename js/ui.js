@@ -29,7 +29,25 @@
     ruta: { t: ["M6 20.500V17a4 4 0 0 1 4-4h4a4 4 0 0 0 4-4V4.500", "M14.500 7.500L18 4l3.500 3.500"], r: ["M6 18.200a2.200 2.200 0 1 0 0 4.400 2.200 2.200 0 0 0 0-4.400z"] },
     x: { t: ["M6 6l12 12", "M18 6L6 18"] },
     descarga: { t: ["M12 4v11", "M7.500 11l4.500 4.500 4.500-4.500", "M5 20h14"] },
-    borrar: { t: ["M4.500 7h15", "M9.500 7V4.500h5V7", "M6.500 7l1 13h9l1-13"] }
+    borrar: { t: ["M4.500 7h15", "M9.500 7V4.500h5V7", "M6.500 7l1 13h9l1-13"] },
+    antena: { t: ["M12 12.500V21", "M8.500 21h7", "M8.300 6.800a5 5 0 0 0 0 6.400", "M15.700 6.800a5 5 0 0 1 0 6.400", "M5.200 4.500a9 9 0 0 0 0 11", "M18.800 4.500a9 9 0 0 1 0 11"], r: ["M12 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"] },
+    globo: { t: ["M12 3.500a8.500 8.500 0 1 0 0 17 8.500 8.500 0 0 0 0-17z", "M3.500 12h17", "M12 3.500c2.600 2.400 3.900 5.200 3.900 8.500s-1.300 6.100-3.900 8.500c-2.600-2.400-3.900-5.200-3.900-8.500s1.300-6.100 3.900-8.500z"] },
+    celular: { t: ["M8.500 3h7A1.500 1.500 0 0 1 17 4.500v15a1.500 1.500 0 0 1-1.500 1.500h-7A1.500 1.500 0 0 1 7 19.500v-15A1.500 1.500 0 0 1 8.500 3z", "M11 18h2"] },
+    notebook: { t: ["M5.500 5.500h13V15h-13z", "M3 18.500h18"] },
+    play: { r: ["M8 5.500v13l11-6.500z"] },
+    parar: { r: ["M7 7h10v10H7z"] },
+    pantalla: { t: ["M3.500 5h17v11h-17z", "M9 20h6", "M12 16v4"] },
+    imprimir: { t: ["M7 8.500V4h10v4.500", "M7 17H4.500V9.500h15V17H17", "M7 14h10v6H7z"] },
+    copiar: { t: ["M9 9h10v11H9z", "M5 15V4h10"] },
+    mochila: { t: ["M8.500 7V5.500a3.500 3.500 0 0 1 7 0V7", "M6 9.500A2.500 2.500 0 0 1 8.500 7h7A2.500 2.500 0 0 1 18 9.500V20H6z", "M9.500 13h5v3h-5z"] },
+    voz: { t: ["M4 9.500v5h3.500l4.500 4v-13l-4.500 4z", "M15.500 9a4.500 4.500 0 0 1 0 6"] },
+    contraste: { t: ["M12 3.500a8.500 8.500 0 1 0 0 17 8.500 8.500 0 0 0 0-17z"], r: ["M12 3.500a8.500 8.500 0 0 1 0 17z"] },
+    letra: { t: ["M3.500 19l5-13 5 13", "M5.300 14.500h6.400", "M15 19l3-7.500 3 7.500", "M16 16.500h4"] },
+    persona: { r: ["M12 4a3.200 3.200 0 1 0 0 6.400A3.200 3.200 0 0 0 12 4z"], t: ["M5.500 20a6.500 6.500 0 0 1 13 0"] },
+    vibrar: { t: ["M8.500 4h7v16h-7z", "M4.500 8.500v7", "M19.500 8.500v7"] },
+    lista: { t: ["M4 6.500l1.500 1.500L8 5.500", "M11 7h9", "M4 12.500l1.500 1.500L8 11.500", "M11 13h9", "M4 18.500l1.500 1.500L8 17.500", "M11 19h9"] },
+    cronometro: { t: ["M12 7a7 7 0 1 0 0 14 7 7 0 0 0 0-14z", "M12 10.500V14l2 1.500", "M10 3.500h4"] },
+    ajustes: { t: ["M4 7h9", "M17 7h3", "M4 17h3", "M11 17h9"], r: ["M15 4.800a2.200 2.200 0 1 0 0 4.400 2.200 2.200 0 0 0 0-4.400z", "M9 14.800a2.200 2.200 0 1 0 0 4.400 2.200 2.200 0 0 0 0-4.400z"] }
   };
 
   function cuerpo(nombre) {
@@ -84,6 +102,9 @@
     if (e.clase) return { clase: e.clase, icono: e.icono || "info" };
     var t = e.texto || "";
     if (/FUEGO LLEG/i.test(t)) return { clase: "ev-fuego", icono: "llama" };
+    if (/^Aviso de vecino/i.test(t)) return { clase: "ev-ambar", icono: "boton" };
+    if (/^Humo detectado/i.test(t)) return { clase: e.nivel >= 2 ? "ev-rojo" : "ev-ambar", icono: "humo" };
+    if (/^Prueba de sirena/i.test(t)) return { clase: "ev-gris", icono: "sirena" };
     if (/^SOS/i.test(t)) return { clase: "ev-rojo", icono: "boton" };
     if (/SIN SEÑAL/i.test(t)) return { clase: "ev-gris", icono: "sinsenal" };
     if (/volvió a tener señal/i.test(t)) return { clase: "ev-verde", icono: "enlinea" };
@@ -94,7 +115,7 @@
     return eventos.slice(0, max).map(function (e) {
       var t = tipoEvento(e), txt = String(e.texto), corte = txt.indexOf(" — ");
       var principal = corte > 0 ? txt.slice(0, corte) : txt, extra = corte > 0 ? txt.slice(corte + 3) : "";
-      return '<li class="ev ' + t.clase + '"><span class="ev-ico">' + icono(t.icono) + '</span><span class="ev-txt">' + esc(principal) +
+      return '<li class="ev ' + t.clase + (e.sim ? " ev-simulado" : "") + '"><span class="ev-ico">' + icono(t.icono) + '</span><span class="ev-txt">' + (e.sim ? '<i class="ev-sim">SIM</i>' : "") + esc(principal) +
         (extra ? '<small>' + esc(extra) + "</small>" : "") + '</span><time>' + hora(e.ts) + "</time></li>";
     }).join("");
   }
@@ -104,7 +125,8 @@
     normal: { color: "#0b8043", tinta: "#fff", icono: "check", texto: "NORMAL", pulso: false },
     preparate: { color: "#ffb400", tinta: "#16130a", icono: "alerta", texto: "PREPÁRATE", pulso: true },
     foco: { color: "#e0202c", tinta: "#fff", icono: "triangulo", texto: "FOCO", pulso: true },
-    ruta: { color: "#e0202c", tinta: "#fff", icono: "evacuar", texto: "EVACUAR", pulso: true },
+    ruta: { color: "#0b8043", tinta: "#fff", icono: "evacuar", texto: "RUTA SEGURA", pulso: true },
+    evacuar: { color: "#e0202c", tinta: "#fff", icono: "evacuar", texto: "EVACUAR", pulso: true },
     refugio: { color: "#7c3aed", tinta: "#fff", icono: "refugio", texto: "REFUGIO", pulso: true },
     fuego: { color: "#0b0d10", tinta: "#ff7a1a", icono: "llama", texto: "FUEGO AQUÍ", pulso: true },
     sinsenal: { color: "#e6e9ee", tinta: "#11151a", icono: "sinsenal", texto: "SIN SEÑAL", pulso: false },
