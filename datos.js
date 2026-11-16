@@ -19,6 +19,10 @@ window.DATOS = {
 
   puntoEncuentro: { nombre: "Cancha del sector", x: 292, y: 404 },
 
+  /* Orden de los postes a lo largo del camino principal, desde el más lejano
+     hasta el más cercano al punto de encuentro. Sirve para leer hacia dónde avanza el fuego. */
+  linea: [3, 2, 1],
+
   postes: [
     {
       nodo: 1, codigo: "P-1451", x: 222, y: 292, pasivo: false,

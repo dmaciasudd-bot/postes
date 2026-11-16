@@ -107,6 +107,7 @@ svg.mapa { display: block; width: 100%; height: auto; font-family: var(--sans); 
 .m-norte { font-size: 7px; font-weight: 800; fill: var(--m-texto); }
 .m-nota { font-size: 7.5px; font-weight: 500; fill: var(--m-suave); }
 .m-ruta { animation: m-correr .9s linear infinite; }
+.m-fuego { animation: m-correr .6s linear infinite; }
 .m-pulso { opacity: 0; transform-box: fill-box; transform-origin: center; animation: m-pulso 1.8s ease-out infinite; }
 .m-pulso2 { animation-delay: .9s; }
 .m-halo { transform-box: fill-box; transform-origin: center; animation: m-halo 2.6s ease-out infinite; }
@@ -437,3 +438,4 @@ body.alto-contraste :focus-visible { outline: 4px solid #ffe27a; }
 .btn-ancho { grid-column: 1 / -1; }
 .btn-voz { width: 46px; height: 46px; min-height: 0; padding: 0; justify-content: center; }
 .btn-voz .ico { width: 24px; height: 24px; }
+.ev-sim { font-style: normal; font-size: 9.5px; font-weight: 900; letter-spacing: .8px; background: #ff5fd2; color: #1a0016; padding: 1px 5px; border-radius: 4px; margin-right: 6px; vertical-align: 1px; }

@@ -1,6 +1,6 @@
 /* Service worker de la app pública (Vecino): guarda TODA la app para que funcione en modo avión.
    Si cambias cualquier archivo, sube el número de VERSION para que los teléfonos se actualicen. */
-var VERSION = "vigia-publica-v3";
+var VERSION = "vigia-publica-v4";
 var ARCHIVOS = [
   "./",
   "index.html",

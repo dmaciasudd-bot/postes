@@ -66,6 +66,36 @@
 
     datos.casas.forEach(function (c) { h.push(casa(c[0], c[1])); });
 
+    // Tramo por donde ya pasó el fuego: une los postes con fusible quemado, en orden de llegada.
+    function posDe(nodo) {
+      for (var k = 0; k < datos.postes.length; k++) if (datos.postes[k].nodo === nodo) return [datos.postes[k].x, datos.postes[k].y];
+      return null;
+    }
+    if (op.estado && op.estado.avance) {
+      var qm = [], vq = {};
+      op.estado.avance.forEach(function (a) {
+        var xy = a && a.tipo === "fuego" && !vq[a.nodo] ? posDe(a.nodo) : null;
+        if (xy) { vq[a.nodo] = 1; qm.push(xy); }
+      });
+      if (qm.length > 1) {
+        h.push('<polyline points="' + pts(qm) + '" fill="none" stroke="#ff5a1f" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity=".38"/>');
+        h.push('<polyline points="' + pts(qm) + '" fill="none" stroke="#7a1d05" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>');
+        h.push('<polyline class="m-fuego" points="' + pts(qm) + '" fill="none" stroke="#ffb020" stroke-width="3.500" stroke-dasharray="3 7" stroke-linecap="round" stroke-linejoin="round"/>');
+      }
+    }
+    // Hacia dónde seguiría el fuego (solo la Central lo pide; es una estimación).
+    if (op.prediccion) {
+      var pa = posDe(op.prediccion.desde);
+      var pb = op.prediccion.encuentro ? [datos.puntoEncuentro.x, datos.puntoEncuentro.y] : posDe(op.prediccion.hacia);
+      if (pa && pb) {
+        var mx = pa[0] + (pb[0] - pa[0]) * 0.55, my = pa[1] + (pb[1] - pa[1]) * 0.55;
+        var an = Math.atan2(pb[1] - pa[1], pb[0] - pa[0]) * 180 / Math.PI;
+        h.push('<polyline class="m-fuego" points="' + pts([pa, pb]) + '" fill="none" stroke="#ff5a1f" stroke-width="5" stroke-dasharray="3 9" stroke-linecap="round" opacity=".95"/>');
+        h.push('<g transform="translate(' + mx + "," + my + ")\"><g transform=\"rotate(" + an + ')"><path d="M-7,-8L8,0L-7,8Z" fill="#ff5a1f" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></g>' +
+          '<text x="13" y="4" class="m-est" style="fill:#ff5a1f">ESTIMACIÓN</text></g>');
+      }
+    }
+
     // Ruta cortada (gris) y ruta vigente (azul, guiones que avanzan y flechas)
     if (op.rutaCortada) {
       h.push('<polyline points="' + pts(op.rutaCortada.puntos) + '" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>');
