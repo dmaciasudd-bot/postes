@@ -156,8 +156,37 @@ button:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
 .tel.ruta-nueva { animation: vibra .5s; }
 @keyframes vibra { 0%, 100% { transform: none; } 20% { transform: translateX(-4px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
 
+/* ---------- Segundo teléfono: pantalla de bloqueo que recibe los SMS de la central ---------- */
+.vecino { padding-bottom: 0; overflow: hidden; }
+.tel { flex: 1.55 1 0; }
+.tel-mapa { flex: 1 1 auto; min-height: 104px; max-height: 190px; aspect-ratio: auto; }
+.tel-mapa > canvas { object-fit: cover; }
+@media (max-height: 1000px) { .pasos { display: none; } }
+.ios { flex: 1 1 0; min-height: 236px; position: relative; border: 8px solid #2b2e33; border-bottom: 0; border-radius: 40px 40px 0 0; box-shadow: 0 0 0 1.5px #000, 0 14px 30px rgba(21,23,26,.28);
+  background: linear-gradient(168deg, #34496f 0%, #1a2132 46%, #56322b 100%); color: #fff; font-family: var(--app); overflow: hidden; padding: 0 9px; }
+.ios::before { content: ""; position: absolute; top: 8px; left: 50%; width: 82px; height: 22px; margin-left: -41px; background: #000; border-radius: 13px; }
+.ios-estado { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 600; padding: 12px 12px 0; }
+.ios-estado i { display: inline-block; width: 21px; height: 10px; border: 1.3px solid rgba(255,255,255,.75); border-radius: 3px; position: relative; }
+.ios-estado i::after { content: ""; position: absolute; inset: 1.3px; right: 5px; background: #fff; border-radius: 1px; }
+.ios-fecha { text-align: center; font-size: 10.5px; font-weight: 700; letter-spacing: .12em; opacity: .8; margin-top: 9px; }
+.ios-hora { text-align: center; font-size: 40px; font-weight: 300; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-bottom: 9px; }
+.notis { display: grid; gap: 6px; }
+.noti { display: grid; grid-template-columns: 28px 1fr; gap: 9px; background: rgba(238,240,248,.2); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-radius: 17px; padding: 8px 11px 9px 9px; }
+.noti-ico { width: 28px; height: 28px; border-radius: 7px; background: #34c759; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+.noti-cab { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; }
+.noti-cab b { font-weight: 700; }
+.noti-cab time { font-size: 11px; opacity: .72; }
+.noti p { font-size: 13px; line-height: 1.27; margin-top: 1px; }
+.noti small { display: block; font-size: 10px; opacity: .6; margin-top: 3px; }
+.noti.nueva { animation: llega .5s cubic-bezier(.2, .9, .3, 1.25); }
+@keyframes llega { from { transform: translateY(-28px) scale(.93); opacity: 0; } }
+.notis-vacio { font-size: 12.5px; line-height: 1.35; text-align: center; opacity: .75; padding: 6px 14px; }
+.ios.vibra { animation: vibra .5s; }
+
 @media (max-width: 1100px) {
   body { display: block; overflow: auto; }
+  .vecino { overflow: visible; padding-bottom: 16px; }
+  .ios { flex: none; height: 400px; width: 100%; max-width: 360px; margin: 0 auto; }
   .consola { padding: 16px; } .bitacora ul { max-height: 180px; }
   .marco { width: 100%; } .margen { grid-template-columns: 1fr; gap: 12px; }
   .vecino { padding: 14px 16px; } .tel { max-width: 360px; width: 100%; margin: 0 auto; min-height: 640px; }
@@ -200,21 +229,28 @@ button:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; }
         <span><i style="background:var(--morado)"></i>Refugio: sin salida segura</span><span><i style="background:var(--azul)"></i>Punto de encuentro</span>
         <span><i class="s-ruta"></i>Ruta del vecino elegido</span><span><i class="s-corte"></i>Camino cortado</span>
       </div>
-      <p class="nota">El fuego es ilustrativo, no un modelo real. Toca un poste para ver su teléfono.</p>
+      <p class="nota">El fuego es ilustrativo, no un modelo real. Toca un poste para ver su teléfono. El SMS es una idea a futuro: el prototipo real todavía no envía mensajes de texto.</p>
     </div>
   </div>
 </main>
 
 <aside class="vecino" aria-label="Teléfono del vecino">
-  <p class="cond">Teléfono del vecino <i>simulación</i></p>
+  <p class="cond">Teléfono del vecino · app <i>simulación</i></p>
   <div class="tel" id="tel">
     <div class="tel-banda">MAQUETA · NO ES UN SERVICIO OFICIAL</div>
     <div class="tel-barra"><b>Vigía</b><div class="quien"><button type="button" id="ant" aria-label="Poste anterior">‹</button><span id="quien"></span><button type="button" id="sig" aria-label="Poste siguiente">›</button></div></div>
     <div class="aviso-ruta" role="status">Ruta actualizada<span id="aviso-det">El camino anterior se cortó.</span></div>
     <div id="heroe" class="heroe" data-e="normal"></div>
-    <div class="tel-mapa"><canvas id="mini-fondo" width="560" height="356"></canvas><canvas id="mini-fuego" width="560" height="356"></canvas><svg id="mini" viewBox="0 0 280 178"></svg></div>
+    <div class="tel-mapa"><canvas id="mini-fondo" width="560" height="356"></canvas><canvas id="mini-fuego" width="560" height="356"></canvas><svg id="mini" viewBox="0 0 280 178" preserveAspectRatio="xMidYMid slice"></svg></div>
     <ol class="pasos" id="pasos"></ol>
     <div class="tel-pie"><div>Llamar al 130<span>Emergencias forestales</span></div></div>
+  </div>
+  <p class="cond">El mismo vecino · SMS sin app <i>idea a futuro</i></p>
+  <div class="ios" id="ios" aria-label="Teléfono bloqueado que recibe los SMS de la central">
+    <div class="ios-estado"><span>Sin datos</span><i></i></div>
+    <p class="ios-fecha">HORA SIMULADA</p>
+    <p class="ios-hora" id="ios-hora">15:00</p>
+    <div class="notis" id="notis" aria-live="polite"></div>
   </div>
 </aside>
 
@@ -257,7 +293,7 @@ function minutos(pasos) { return Math.max(1, Math.round(pasos * SEG_PASO / 60));
 /* ============ Estado ============ */
 var nodos, postes, seguros, aristas, combustible = new Float32Array(GX * GY);
 var cel, edad, ardiendo, t, nivel, eventos, narr, rnd, viento = VIENTOS[5], tEvacuar, tAviso;
-var rutas = {}, cuenta = { rutas: 0 }, sel = "P-09", corriendo = false, iniciado = false, terminado = false, vel = 1, sucio = true, focos = [];
+var rutas = {}, cuenta = { rutas: 0, sms: 0 }, iosClave = "", sel = "P-09", corriendo = false, iniciado = false, terminado = false, vel = 1, sucio = true, focos = [];
 
 (function () {
   var r = semilla(11);
@@ -266,7 +302,7 @@ var rutas = {}, cuenta = { rutas: 0 }, sel = "P-09", corriendo = false, iniciado
 
 function reiniciar() {
   nodos = {}; postes = []; seguros = []; aristas = [];
-  POSTES.forEach(function (a) { var p = { id: "P-" + (a[0] < 10 ? "0" : "") + a[0], x: a[1], y: a[2], tipo: "poste", humo: false, fuego: false, tHumo: 0, tFuego: 0, dist: 9999, cambio: 0 }; nodos[p.id] = p; postes.push(p); });
+  POSTES.forEach(function (a) { var p = { id: "P-" + (a[0] < 10 ? "0" : "") + a[0], x: a[1], y: a[2], tipo: "poste", humo: false, fuego: false, tHumo: 0, tFuego: 0, dist: 9999, cambio: 0, sms: [] }; nodos[p.id] = p; postes.push(p); });
   SEGUROS.forEach(function (s) { var n = { id: s.id, nombre: s.nombre, x: s.x, y: s.y, tipo: "seguro", malo: false }; nodos[n.id] = n; seguros.push(n); });
   ARISTAS.forEach(function (e) {
     var a = nodos[e[0]], b = nodos[e[1]], len = Math.hypot(a.x - b.x, a.y - b.y), n = Math.max(2, Math.round(len / 8)), ms = [];
@@ -274,7 +310,7 @@ function reiniciar() {
     aristas.push({ a: a, b: b, len: len, muestras: ms, cortada: false });
   });
   cel = new Uint8Array(GX * GY); edad = new Uint8Array(GX * GY); ardiendo = []; focos = [];
-  t = 0; nivel = 0; eventos = []; rnd = semilla(7); tEvacuar = 0; tAviso = 0; cuenta = { rutas: 0 };
+  t = 0; nivel = 0; eventos = []; rnd = semilla(7); tEvacuar = 0; tAviso = 0; cuenta = { rutas: 0, sms: 0 }; iosClave = "";
   corriendo = false; iniciado = false; terminado = false;
   narr = { titulo: "Todo normal. 18 postes vigilando.", detalle: "Cada poste tiene un sensor de humo y un fusible térmico que se quema cuando el fuego llega a él." };
   rutas = calcular(); postes.forEach(function (p) { p.ruta = rutaDe(p); p.clave = p.ruta ? p.ruta.ids.join(">") : ""; });
@@ -373,10 +409,10 @@ function paso() {
 
   // Niveles: un indicio = PREPÁRATE; segundo indicio o fusible = EVACUAR
   var indicios = postes.filter(function (p) { return p.humo; }).length, hayFuego = postes.some(function (p) { return p.fuego; });
-  var subioA2 = false;
+  var subioA2 = false, subioA1 = false;
   nHumo.forEach(function (p) { ev("#f4b400", "Humo detectado en " + p.id); });
   if (nivel === 0 && indicios >= 1) {
-    nivel = 1; tAviso = t; var p0 = nHumo[0] || nFuego[0];
+    nivel = 1; subioA1 = true; tAviso = t; var p0 = nHumo[0] || nFuego[0];
     narr = { titulo: "El poste " + p0.id + " detectó humo.", detalle: "Primer indicio: todo el sector pasa a PREPÁRATE. Todavía no se evacúa." };
     ev("#f4b400", "Sector en PREPÁRATE");
   }
@@ -410,7 +446,7 @@ function paso() {
       var nombres = cambiadas.map(function (p) { return p.id; });
       ev("#5b8cff", (cambiadas.length === 1 ? "Ruta recalculada para " : cambiadas.length + " rutas recalculadas: ") + lista(nombres.slice(0, 4)) + (nombres.length > 4 ? " y " + (nombres.length - 4) + " más" : ""));
       if (!nFuego.length && !malos.length) narr = { titulo: cambiadas.length === 1 ? "La ruta de " + nombres[0] + " cambió sola." : cambiadas.length + " rutas cambiaron solas.",
-        detalle: "El fuego cortó un camino. Los postes afectados ya muestran la nueva salida: " + lista(nombres.slice(0, 4)) + (nombres.length > 4 ? " y otros" : "") + "." };
+        detalle: "El fuego cortó un camino. La central les manda un SMS y los postes ya muestran la nueva salida: " + lista(nombres.slice(0, 4)) + (nombres.length > 4 ? " y otros" : "") + "." };
       if (nombres.indexOf(sel) >= 0) avisarTelefono(nodos[sel]);
     }
     sinSalida.forEach(function (p) {
@@ -419,6 +455,19 @@ function paso() {
     });
     sucio = true;
   }
+  // SMS de la central: un mensaje por poste cada vez que cambia lo que ese poste debe hacer
+  var lote = { fuego: 0, preparate: 0, evacuar: 0, refugio: 0, cambio: 0 };
+  nFuego.forEach(function (p) { enviarSms(p, "fuego"); lote.fuego++; });
+  if (subioA2) postes.forEach(function (p) { if (!p.fuego) { var tp = p.ruta ? "evacuar" : "refugio"; enviarSms(p, tp); lote[tp]++; } });
+  else if (subioA1) postes.forEach(function (p) { if (!p.fuego) { enviarSms(p, "preparate", p0.id); lote.preparate++; } });
+  (cambiadas || []).forEach(function (p) { enviarSms(p, "cambio"); lote.cambio++; });
+  (sinSalida || []).forEach(function (p) { enviarSms(p, "refugio"); lote.refugio++; });
+  if (lote.preparate) ev("#34c759", "SMS a " + nPostes(lote.preparate) + ": prepárate");
+  if (lote.evacuar) ev("#34c759", "SMS a " + nPostes(lote.evacuar) + ": evacuar, con la vía de cada uno");
+  if (lote.cambio) ev("#34c759", "SMS a " + nPostes(lote.cambio) + ": cambio de vía");
+  if (lote.refugio) ev("#34c759", "SMS a " + nPostes(lote.refugio) + ": refugiarse");
+  if (lote.fuego + lote.preparate + lote.evacuar + lote.cambio + lote.refugio) sucio = true;
+
   // Si el poste del teléfono se quemó, pasar al vecino más cercano que sigue en pie
   var ps = nodos[sel];
   if (ps.fuego && t - ps.tFuego === 18) {
@@ -432,6 +481,43 @@ function paso() {
     ev("#1e9e57", "Fin de la simulación"); sucio = true;
   }
   if (t % 4 === 0) sucio = true;
+}
+
+/* ============ SMS (idea a futuro): texto corto, sin tildes, para que quepa en 160 caracteres ============ */
+function sinTildes(x) { return x.replace(/[áéíóúÁÉÍÓÚ]/g, function (c) { return "aeiouAEIOU".charAt("áéíóúÁÉÍÓÚ".indexOf(c)); }); }
+function nPostes(n) { return n + (n === 1 ? " poste" : " postes"); }
+function viaSms(p, corto) {
+  var inter = p.ruta.ids.slice(1, -1);
+  var por = !inter.length ? "directo" : "por " + (inter.length > 3 ? inter.slice(0, 2).join(", ") + " y " + (inter.length - 2) + " postes mas" : lista(inter));
+  return "hacia la " + p.ruta.destino.nombre + " " + por + " (" + fDist(p.ruta.largo) + (corto ? "" : ", " + fMin(p.ruta.largo)) + ")";
+}
+function enviarSms(p, tipo, origen, corto) {
+  var x;
+  if (tipo === "preparate") x = "VIGIA: PREPARATE. Humo detectado en " + origen + ". Poste " + p.id + ": alista tu mochila. Aun no se evacua." + (p.ruta ? " Tu via: " + viaSms(p, corto) + "." : "");
+  else if (tipo === "evacuar") x = "VIGIA: EVACUA AHORA. Poste " + p.id + ": sal " + viaSms(p, corto) + ". No vuelvas por tus cosas. Emergencias: 130.";
+  else if (tipo === "cambio") x = "VIGIA: CAMBIO DE VIA. El fuego corto tu camino. Poste " + p.id + ": ahora sal " + viaSms(p, corto) + ".";
+  else if (tipo === "refugio") x = "VIGIA: REFUGIATE. Poste " + p.id + ": el fuego corto todas tus salidas. No salgas a los caminos. Llama al 130.";
+  else x = "VIGIA: el fuego llego al poste " + p.id + ". Si sigues cerca, alejate ya y llama al 130.";
+  if (x.length > 160 && !corto) return enviarSms(p, tipo, origen, true);   // un SMS no pasa de 160 caracteres
+  p.sms.push({ t: t, real: performance.now(), tipo: tipo, texto: sinTildes(x).slice(0, 160) });
+  cuenta.sms++; cuenta.smsSubio = performance.now();
+}
+var ICO_SMS = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 4.500c-4.700 0-8.500 3-8.500 6.800 0 2.100 1.200 4 3.100 5.200l-.9 3 3.500-1.700c.9.200 1.800.3 2.800.3 4.700 0 8.500-3 8.500-6.800s-3.800-6.800-8.500-6.800z" fill="#fff"/></svg>';
+var tVibra = 0;
+function pintarIos() {
+  var p = nodos[sel], m = Math.floor(t * SEG_PASO / 60), mm = m % 60, ahora = performance.now();
+  $("ios-hora").textContent = (15 + Math.floor(m / 60)) + ":" + (mm < 10 ? "0" : "") + mm;
+  var clave = sel + "|" + p.sms.length;
+  if (clave !== iosClave) {
+    iosClave = clave;
+    var fresco = p.sms.length && ahora - p.sms[p.sms.length - 1].real < 900;
+    $("notis").innerHTML = p.sms.length ? p.sms.slice().reverse().slice(0, 5).map(function (x, i) {
+      return '<div class="noti' + (i === 0 && fresco ? " nueva" : "") + '"><span class="noti-ico">' + ICO_SMS + '</span><div><div class="noti-cab"><b>VIGÍA · Central</b><time data-t="' + x.t + '"></time></div><p>' + esc(x.texto) +
+        "</p><small>SMS al poste " + p.id + " · " + x.texto.length + " de 160 caracteres</small></div></div>";
+    }).join("") : '<p class="notis-vacio">Sin mensajes. Aquí llegan los SMS de la central para el poste ' + p.id + ", sin app y sin datos móviles.</p>";
+    if (fresco) { $("ios").classList.remove("vibra"); void $("ios").offsetWidth; $("ios").classList.add("vibra"); clearTimeout(tVibra); tVibra = setTimeout(function () { $("ios").classList.remove("vibra"); }, 600); }
+  }
+  [].forEach.call($("notis").querySelectorAll("time"), function (el) { var d = t - +el.getAttribute("data-t"); el.textContent = d < 4 ? "ahora" : "hace " + minutos(d) + " min"; });
 }
 
 var temporizador = 0;
@@ -570,14 +656,14 @@ function pintarTodo() {
   $("narra").innerHTML = "<p>" + esc(narr.titulo) + "</p><p>" + esc(narr.detalle) + "</p>";
   var sube = cuenta.subio && performance.now() - cuenta.subio < 800;
   $("cuentas").innerHTML = [
-    [postes.filter(function (p) { return p.humo && !p.fuego; }).length, "postes con humo"], [q.length, "fusibles quemados"],
-    [aristas.filter(function (e) { return e.cortada; }).length, "caminos cortados"], [cuenta.rutas, "rutas recalculadas", sube]
+    [q.length, "fusibles quemados"], [aristas.filter(function (e) { return e.cortada; }).length, "caminos cortados"],
+    [cuenta.rutas, "rutas recalculadas", sube], [cuenta.sms, "SMS enviados", cuenta.smsSubio && performance.now() - cuenta.smsSubio < 800]
   ].map(function (c) { return "<div" + (c[2] ? ' class="sube"' : "") + "><dd>" + c[0] + "</dd><dt>" + c[1] + "</dt></div>"; }).join("");
   $("linea").innerHTML = eventos.length ? eventos.map(function (e) { return '<li style="--c:' + e.c + '"><time>' + reloj(e.t) + "</time><span>" + esc(e.texto) + "</span></li>"; }).join("")
     : '<li style="--c:#1e9e57"><time>00:00</time><span>Sin eventos todavía.</span></li>';
   $("quemados").innerHTML = q.map(function (p, i) { return "<li>" + (i + 1) + "º " + p.id + " <small>" + reloj(p.tFuego) + "</small></li>"; }).join("");
   $("lectura").innerHTML = lectura(q);
-  pintarTelefono();
+  pintarTelefono(); pintarIos();
 }
 function lectura(q) {
   if (!q.length) return nivel ? "Hay humo, pero ningún fusible quemado: todavía no se sabe dónde está el fuego." : "Sin fuego detectado. Cuando se queme un fusible, aquí se lee hacia dónde avanza.";
@@ -668,7 +754,8 @@ ponerViento(VIENTOS[5]);
 reiniciar();
 $("fondo").innerHTML = fondoSvg();
 window.__demo = { avanzar: function (n) { if (!iniciado) iniciar(); for (var i = 0; i < n && !terminado; i++) paso(); sucio = true; },
-  estado: function () { return { t: t, nivel: nivel, ardiendo: ardiendo.length, quemados: postes.filter(function (p) { return p.fuego; }).length, rutas: cuenta.rutas, sel: sel, terminado: terminado }; } };
+  sms: function (id) { return nodos[id || sel].sms.map(function (x) { return reloj(x.t) + " [" + x.texto.length + "] " + x.texto; }); },
+  estado: function () { return { sms: cuenta.sms, t: t, nivel: nivel, ardiendo: ardiendo.length, quemados: postes.filter(function (p) { return p.fuego; }).length, rutas: cuenta.rutas, sel: sel, terminado: terminado }; } };
 requestAnimationFrame(cuadro);
 })();
 </script>
